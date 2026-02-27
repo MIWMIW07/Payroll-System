@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Philtech GMA | Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+
+<!-- TOP HEADER -->
+<header class="top-bar">
+    <div class="logo-section">
+        <img src="assets/images/logo.png" class="logo" alt="Logo">
+        <h1>Philtech GMA</h1>
+    </div>
+</header>
+
+<div class="main-container">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <ul class="menu">
+            <li class="active">📊 Dashboard</li>
+            <li>👥 Employees</li>
+            <li>📝 Attendance</li>
+            <li>🧮 Payroll</li>
+            <li>📄 Payslip</li>
+            <li>📑 Report</li>
+            <li>👤 User Mgmt.</li>
+            <li onclick="logout()">⚙ Logout</li>
+        </ul>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+        <h2 class="page-title">DASHBOARD</h2>
+
+        <!-- STAT CARDS -->
+        <div class="cards">
+            <div class="card">
+                <h3>Total Employees</h3>
+                <p class="card-number">123</p>
+                <span class="card-sub">+3 New Employee</span>
+            </div>
+            <div class="card">
+                <h3>Payroll This Month</h3>
+                <p class="card-number">₱60,800</p>
+                <span class="card-sub">+7.5% vs. Last Month</span>
+            </div>
+            <div class="card">
+                <h3>Pending Payroll</h3>
+                <p class="card-number">17</p>
+                <span class="card-sub">Needs approval</span>
+            </div>
+            <div class="card">
+                <h3>Total Deduction</h3>
+                <p class="card-number">₱60,800</p>
+                <span class="card-sub">Tax, Benefits</span>
+            </div>
+        </div>
+
+        <!-- CHARTS -->
+        <div class="charts">
+            <div class="chart-box">
+                <h3>Payroll Trend (Monthly)</h3>
+                <canvas id="barChart"></canvas>
+            </div>
+            <div class="chart-box">
+                <h3>Employee Type</h3>
+                <canvas id="pieChart"></canvas>
+            </div>
+        </div>
+
+    </main>
+
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/dashboard.js"></script>
+</body>
+</html>

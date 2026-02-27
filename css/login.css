@@ -1,0 +1,126 @@
+body {
+    background-color: #dcd3b8;
+}
+
+/* TOP BAR */
+.top-bar {
+    background-color: #b0303b;
+    color: #f4e8c1;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 15px 40px;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo {
+    width: 50px;
+}
+
+/* LOGIN WRAPPER */
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 80px);
+}
+
+/* LOGIN CARD */
+.login-card {
+    background-color: rgba(176, 48, 59, 0.6);
+    padding: 50px 40px;
+    border-radius: 30px;
+    width: 400px;
+    text-align: center;
+    position: relative;
+}
+
+/* AVATAR */
+.avatar-circle {
+    width: 90px;
+    height: 90px;
+    background-color: #b0303b;
+    border-radius: 50%;
+    margin: -90px auto 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+    font-size: 40px;
+}
+
+/* INPUT GROUP */
+.input-group {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px 45px;
+    border-radius: 20px;
+    border: none;
+    background-color: #e8d79f;
+    outline: none;
+    font-size: 15px;
+}
+
+.input-icon {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.lock-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* OPTIONS */
+.options-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.forgot-link {
+    text-decoration: none;
+    color: black;
+}
+
+.signup-text {
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.signup-text a {
+    font-weight: bold;
+    text-decoration: none;
+    color: black;
+}
+
+/* LOGIN BUTTON */
+.login-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 25px;
+    background-color: #b0303b;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.login-btn:hover {
+    opacity: 0.85;
+}
