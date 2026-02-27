@@ -1,0 +1,152 @@
+body {
+    background-color: #dcd3b8;
+}
+
+/* TOP BAR */
+.top-bar {
+    background-color: #b0303b;
+    color: #f4e8c1;
+    padding: 15px 40px;
+}
+
+/* LAYOUT */
+.layout {
+    display: flex;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 230px;
+    background-color: #b0303b;
+    color: white;
+    padding: 30px 20px;
+    min-height: 100vh;
+    border-radius: 0 30px 30px 0;
+}
+
+.sidebar ul {
+    list-style: none;
+}
+
+.sidebar li {
+    padding: 12px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+.sidebar li:hover,
+.sidebar .active {
+    background-color: #d98989;
+}
+
+/* CONTENT */
+.content {
+    flex: 1;
+    padding: 40px;
+}
+
+/* HEADER SECTION */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.page-title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #b0303b;
+}
+
+.page-title h2 {
+    font-size: 32px;
+}
+
+.header-actions {
+    display: flex;
+    gap: 20px;
+}
+
+/* FILTER */
+.filter-container {
+    position: relative;
+}
+
+.filter-btn {
+    background-color: #e8d79f;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.filter-dropdown {
+    display: none;
+    position: absolute;
+    top: 45px;
+    background: #e8d79f;
+    border-radius: 15px;
+    width: 180px;
+    overflow: hidden;
+}
+
+.filter-dropdown div {
+    padding: 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.filter-dropdown div:hover {
+    background: #d98989;
+}
+
+/* ADD BUTTON */
+.add-btn {
+    background-color: #d98989;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 25px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* TABLE */
+.table-card {
+    background-color: rgba(217,137,137,0.9);
+    border-radius: 25px;
+    padding: 25px;
+}
+
+.employee-table {
+    width: 100%;
+    border-collapse: collapse;
+    color: #f4e8c1;
+}
+
+.employee-table th,
+.employee-table td {
+    padding: 15px;
+    border-bottom: 2px solid #f4e8c1;
+}
+
+.actions button {
+    margin-right: 5px;
+    background: #e8d79f;
+    border: none;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+}
+
+.pagination {
+    text-align: right;
+    margin-top: 20px;
+    font-weight: bold;
+    color: #b0303b;
+}
+

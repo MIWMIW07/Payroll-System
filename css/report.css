@@ -1,0 +1,136 @@
+body {
+  background-color: #dcd3b8;
+}
+
+/* HEADER */
+.top-bar {
+  background-color: #b0303b;
+  color: #f4e8c1;
+  padding: 15px 40px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo { width: 50px; }
+
+.layout { display: flex; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 230px;
+  background-color: #b0303b;
+  color: white;
+  padding: 30px 20px;
+  min-height: 100vh;
+  border-radius: 0 30px 30px 0;
+}
+
+.sidebar-title { margin-bottom: 30px; }
+
+.sidebar ul { list-style: none; }
+
+.sidebar li {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sidebar li:hover,
+.sidebar .active {
+  background-color: #d98989;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 35px 40px;
+}
+
+/* PAGE HEAD */
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #b0303b;
+}
+
+.title h2 {
+  font-size: 44px;
+  font-weight: 900;
+}
+
+.filter-btn {
+  background: #e8d79f;
+  padding: 10px 20px;
+  border-radius: 20px;
+  font-weight: bold;
+  color: #b0303b;
+}
+
+/* REPORT CARD */
+.report-card {
+  background: rgba(217,137,137,0.92);
+  border-radius: 22px;
+  padding: 30px;
+  position: relative;
+  min-height: 380px;
+}
+
+.report-watermark {
+  position: absolute;
+  inset: 0;
+  background: url("../assets/images/logo.png") center no-repeat;
+  background-size: 560px;
+  opacity: 0.09;
+  pointer-events: none;
+}
+
+.report-title {
+  color: #f4e8c1;
+  font-size: 28px;
+  font-weight: 900;
+  margin-bottom: 25px;
+}
+
+.report-item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  color: #f4e8c1;
+  font-weight: 900;
+  font-size: 20px;
+  padding: 15px 0;
+}
+
+.separator {
+  border-bottom: 4px dotted rgba(244,232,193,0.85);
+}
+
+/* BUTTONS */
+.bottom-actions {
+  margin-top: 25px;
+  display: flex;
+  gap: 20px;
+}
+
+.action-btn {
+  background: #b0303b;
+  color: white;
+  border: none;
+  padding: 12px 25px;
+  border-radius: 25px;
+  font-weight: bold;
+  cursor: pointer;
+}

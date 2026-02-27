@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Philtech GMA | Payroll</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/payroll.css" />
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="logo-section">
+    <img src="assets/images/logo.png" class="logo" alt="Logo">
+    <h1>Philtech GMA</h1>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2 class="sidebar-title">💰 Payroll</h2>
+
+    <ul>
+      <li onclick="go('dashboard.html')">📊 Dashboard</li>
+<li onclick="go('employees.html')">👥 Employees</li>
+<li onclick="go('attendance.html')">📝 Attendance</li>
+<li onclick="go('payroll.html')">🧮 Payroll</li>
+<li onclick="go('payslip.html')">📄 Payslip</li>
+<li onclick="go('report.html')">📑 Report</li>
+<li onclick="go('user-mgmt.html')">👤 User Mgmt.</li>
+<li onclick="go('settings.html')">⚙ Settings</li>
+<li onclick="logout()">🚪 Logout</li>
+    </ul>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <div class="page-head">
+      <div class="title">
+        <span class="title-icon">🧮</span>
+        <h2>Payroll</h2>
+      </div>
+
+      <div class="right-controls">
+        <div class="filter-btn">
+          Filter by Date ▼
+        </div>
+
+        <div class="search-box">
+          <span>🔎</span>
+          <input type="text" placeholder="Search Employees...">
+        </div>
+      </div>
+    </div>
+
+    <section class="table-card">
+      <div class="table-watermark"></div>
+
+      <div class="table-wrap">
+        <table class="pay-table">
+          <thead>
+            <tr>
+              <th>Employee Name</th>
+              <th>Payroll Period</th>
+              <th>Gross Salary</th>
+              <th>Total Deduction</th>
+              <th>Net Salary</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr>
+              <td>Ayesha Nicole</td>
+              <td class="period">June 2025 <span>📅</span></td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>Active</td>
+              <td class="actions">
+                <button>✏</button>
+                <button>🗑</button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Ayesha Nicole</td>
+              <td class="period">June 2025 <span>📅</span></td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>Active</td>
+              <td class="actions">
+                <button>✏</button>
+                <button>🗑</button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Ayesha Nicole</td>
+              <td class="period">June 2025 <span>📅</span></td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>Active</td>
+              <td class="actions">
+                <button>✏</button>
+                <button>🗑</button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Ayesha Nicole</td>
+              <td class="period">June 2025 <span>📅</span></td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>Active</td>
+              <td class="actions">
+                <button>✏</button>
+                <button>🗑</button>
+              </td>
+            </tr>
+
+            <tr>
+              <td>Ayesha Nicole</td>
+              <td class="period">June 2025 <span>📅</span></td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>₱4,500</td>
+              <td>Active</td>
+              <td class="actions">
+                <button>✏</button>
+                <button>🗑</button>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        ◀ 1–5 OF 30 ▶
+      </div>
+    </section>
+
+    <div class="bottom-actions">
+      <button class="action-btn">🧮 Generate Payroll</button>
+      <button class="action-btn">🧾 Generate Payslip</button>
+      <button class="action-btn">📤 Export</button>
+    </div>
+
+  </main>
+</div>
+<script src="js/navigation.js"></script>
+<script src="js/payroll.js"></script>
+</body>
+</html>

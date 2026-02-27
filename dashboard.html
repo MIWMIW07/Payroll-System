@@ -4,82 +4,103 @@
     <meta charset="UTF-8">
     <title>Philtech GMA | Dashboard</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/dashboard.css">
 </head>
 <body>
 
-<!-- TOP HEADER -->
+<!-- TOP BAR -->
 <header class="top-bar">
     <div class="logo-section">
         <img src="assets/images/logo.png" class="logo" alt="Logo">
         <h1>Philtech GMA</h1>
     </div>
+
+    <div class="header-right">
+        <div class="search-box">
+            <input type="text" placeholder="Search Employees...">
+        </div>
+
+        <div class="user-badge">
+            <span>👤</span>
+            User
+        </div>
+    </div>
 </header>
 
-<div class="main-container">
+<div class="layout">
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
-        <ul class="menu">
-            <li class="active">📊 Dashboard</li>
-            <li>👥 Employees</li>
-            <li>📝 Attendance</li>
-            <li>🧮 Payroll</li>
-            <li>📄 Payslip</li>
-            <li>📑 Report</li>
-            <li>👤 User Mgmt.</li>
-            <li onclick="logout()">⚙ Logout</li>
-        </ul>
+        <h2 class="sidebar-title">💰 Payroll</h2>
+
+        <ul>
+  <li onclick="go('dashboard.html')">📊 Dashboard</li>
+<li onclick="go('employees.html')">👥 Employees</li>
+<li onclick="go('attendance.html')">📝 Attendance</li>
+<li onclick="go('payroll.html')">🧮 Payroll</li>
+<li onclick="go('payslip.html')">📄 Payslip</li>
+<li onclick="go('report.html')">📑 Report</li>
+<li onclick="go('user-mgmt.html')">👤 User Mgmt.</li>
+<li onclick="go('settings.html')">⚙ Settings</li>
+<li onclick="logout()">🚪 Logout</li>
+</ul>
     </aside>
 
-    <!-- CONTENT -->
+    <!-- MAIN CONTENT -->
     <main class="content">
 
         <h2 class="page-title">DASHBOARD</h2>
 
-        <!-- STAT CARDS -->
+        <!-- CARDS -->
         <div class="cards">
             <div class="card">
                 <h3>Total Employees</h3>
-                <p class="card-number">123</p>
-                <span class="card-sub">+3 New Employee</span>
+                <p class="big-number">123</p>
+                <span>+3 New Employee</span>
             </div>
+
             <div class="card">
-                <h3>Payroll This Month</h3>
-                <p class="card-number">₱60,800</p>
-                <span class="card-sub">+7.5% vs. Last Month</span>
+                <h3>Payroll this month</h3>
+                <p class="big-number">₱60.8k</p>
+                <span>+7.5% vs. Last Month</span>
             </div>
+
             <div class="card">
                 <h3>Pending Payroll</h3>
-                <p class="card-number">17</p>
-                <span class="card-sub">Needs approval</span>
+                <p class="big-number">17</p>
+                <span>Needs approval</span>
             </div>
+
             <div class="card">
                 <h3>Total Deduction</h3>
-                <p class="card-number">₱60,800</p>
-                <span class="card-sub">Tax, Benefits</span>
+                <p class="big-number">₱60.8k</p>
+                <span>Tax, Benefits</span>
             </div>
         </div>
 
-        <!-- CHARTS -->
-        <div class="charts">
-            <div class="chart-box">
+        <!-- CHART SECTION -->
+        <div class="chart-section">
+
+            <div class="chart-box large">
                 <h3>Payroll Trend (Monthly)</h3>
                 <canvas id="barChart"></canvas>
             </div>
+
             <div class="chart-box">
                 <h3>Employee Type</h3>
                 <canvas id="pieChart"></canvas>
             </div>
+
         </div>
 
     </main>
 
 </div>
-
-<!-- Chart.js CDN -->
+<script src="js/navigation.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="js/dashboard.js"></script>
+
 </body>
 </html>

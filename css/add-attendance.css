@@ -1,0 +1,146 @@
+body {
+    background-color: #dcd3b8;
+}
+
+/* HEADER */
+.top-bar {
+    background-color: #b0303b;
+    color: #f4e8c1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.logo { width: 50px; }
+
+.back-btn {
+    background: #e8d79f;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* FORM WRAPPER */
+.form-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: calc(100vh - 90px);
+}
+
+/* CARD */
+.form-card {
+    background-color: rgba(217,137,137,0.9);
+    padding: 40px;
+    border-radius: 30px;
+    width: 800px;
+    text-align: center;
+    position: relative;
+}
+
+.form-card::before {
+    content: "";
+    position: absolute;
+    background: url("../assets/images/logo.png") center no-repeat;
+    background-size: 500px;
+    opacity: 0.07;
+    inset: 0;
+    pointer-events: none;
+}
+
+.avatar-circle {
+    width: 100px;
+    height: 100px;
+    background-color: #b0303b;
+    border-radius: 50%;
+    margin: -80px auto 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 40px;
+    color: white;
+}
+
+h2 {
+    color: white;
+    margin-bottom: 30px;
+    font-size: 36px;
+}
+
+/* GRID */
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+
+.form-grid input {
+    padding: 15px;
+    border-radius: 25px;
+    border: none;
+    background-color: #e8d79f;
+    font-size: 16px;
+    outline: none;
+}
+
+/* DROPDOWN */
+.dropdown-container {
+    position: relative;
+}
+
+.dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 55px;
+    width: 100%;
+    background: #e8d79f;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.dropdown-menu div {
+    padding: 15px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.dropdown-menu div:hover {
+    background-color: #d98989;
+}
+
+/* BUTTONS */
+.form-buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.save-btn,
+.cancel-btn {
+    padding: 12px 40px;
+    border: none;
+    border-radius: 25px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.save-btn {
+    background-color: #b0303b;
+    color: white;
+}
+
+.cancel-btn {
+    background-color: #b0303b;
+    color: white;
+}

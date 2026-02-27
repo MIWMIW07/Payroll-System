@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Philtech GMA | Attendance</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/attendance.css" />
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="logo-section">
+    <img src="assets/images/logo.png" class="logo" alt="Logo">
+    <h1>Philtech GMA</h1>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2 class="sidebar-title">💰 Payroll</h2>
+
+    <ul>
+      <li onclick="go('dashboard.html')">📊 Dashboard</li>
+<li onclick="go('employees.html')">👥 Employees</li>
+<li onclick="go('attendance.html')">📝 Attendance</li>
+<li onclick="go('payroll.html')">🧮 Payroll</li>
+<li onclick="go('payslip.html')">📄 Payslip</li>
+<li onclick="go('report.html')">📑 Report</li>
+<li onclick="go('user-mgmt.html')">👤 User Mgmt.</li>
+<li onclick="go('settings.html')">⚙ Settings</li>
+<li onclick="logout()">🚪 Logout</li>
+    </ul>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <div class="page-head">
+      <div class="title">
+        <span class="title-icon">🪪</span>
+        <h2>Attendance</h2>
+      </div>
+
+      <div class="right-controls">
+        <div class="search-box">
+          <span class="search-icon">🔎</span>
+          <input type="text" id="searchInput" placeholder="Search Employees...">
+        </div>
+
+        <button class="add-btn" type="button" onclick="go('add-attendance.html')">
+          <span class="plus">+</span> Add Attendance
+        </button>
+      </div>
+    </div>
+
+    <section class="table-card">
+      <div class="table-watermark"></div>
+
+      <div class="table-wrap">
+        <table class="att-table">
+          <thead>
+            <tr>
+              <th style="width: 28%;">Employee Name</th>
+              <th style="width: 16%;">Days Present</th>
+              <th style="width: 16%;">O.T. Hours</th>
+              <th style="width: 24%;">Payroll Period</th>
+              <th style="width: 16%;">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody id="attTbody">
+            <tr>
+              <td class="name">Ayesha Nicole</td>
+              <td>22</td>
+              <td>22</td>
+              <td class="period">
+                <span>June 2025</span>
+                <span class="cal">📅</span>
+              </td>
+              <td>
+                <div class="action-icons">
+                  <button class="icon-btn" title="Edit">✏</button>
+                  <button class="icon-btn" title="Delete">🗑</button>
+                </div>
+              </td>
+            </tr>
+
+            <tr>
+              <td class="name">Ayesha Nicole</td>
+              <td>22</td>
+              <td>22</td>
+              <td class="period"><span>June 2025</span><span class="cal">📅</span></td>
+              <td><div class="action-icons"><button class="icon-btn">✏</button><button class="icon-btn">🗑</button></div></td>
+            </tr>
+
+            <tr>
+              <td class="name">Ayesha Nicole</td>
+              <td>22</td>
+              <td>22</td>
+              <td class="period"><span>June 2025</span><span class="cal">📅</span></td>
+              <td><div class="action-icons"><button class="icon-btn">✏</button><button class="icon-btn">🗑</button></div></td>
+            </tr>
+
+            <tr>
+              <td class="name">Ayesha Nicole</td>
+              <td>22</td>
+              <td>22</td>
+              <td class="period"><span>June 2025</span><span class="cal">📅</span></td>
+              <td><div class="action-icons"><button class="icon-btn">✏</button><button class="icon-btn">🗑</button></div></td>
+            </tr>
+
+            <tr>
+              <td class="name">Ayesha Nicole</td>
+              <td>22</td>
+              <td>22</td>
+              <td class="period"><span>June 2025</span><span class="cal">📅</span></td>
+              <td><div class="action-icons"><button class="icon-btn">✏</button><button class="icon-btn">🗑</button></div></td>
+            </tr>
+
+            <tr>
+              <td class="name">Ayesha Nicole</td>
+              <td>22</td>
+              <td>22</td>
+              <td class="period"><span>June 2025</span><span class="cal">📅</span></td>
+              <td><div class="action-icons"><button class="icon-btn">✏</button><button class="icon-btn">🗑</button></div></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="pagination">
+        <button class="page-arrow" type="button">‹</button>
+        <div class="page-info">1–6 OF 30</div>
+        <button class="page-arrow" type="button">›</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+<script src="js/navigation.js"></script>
+<script src="js/attendance.js"></script>
+</body>
+</html>

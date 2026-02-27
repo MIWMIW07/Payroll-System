@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Employee</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/add-employee.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo-section">
+        <img src="assets/images/logo.png" class="logo" alt="Logo">
+        <h1>Philtech GMA</h1>
+    </div>
+
+    <button class="back-btn" onclick="goBack()">←</button>
+</header>
+
+<main class="form-wrapper">
+
+    <div class="form-card">
+
+        <div class="avatar-circle">👤</div>
+
+        <h2>Add employee</h2>
+
+        <form id="employeeForm">
+
+            <div class="form-grid">
+
+                <input type="text" placeholder="Full Name" required>
+                <input type="number" placeholder="Base Salary" required>
+
+                <input type="text" placeholder="Position" required>
+                <input type="email" placeholder="Email" required>
+
+                <div class="dropdown-container">
+                    <input type="text" id="empType" placeholder="Employment Type" readonly required>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div onclick="selectType('Regular')">Regular</div>
+                        <div onclick="selectType('Contractual')">Contractual</div>
+                    </div>
+                </div>
+
+                <input type="text" placeholder="Status" required>
+
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit" class="save-btn">Save</button>
+                <button type="button" class="cancel-btn" onclick="goBack()">Cancel</button>
+            </div>
+
+        </form>
+
+    </div>
+
+</main>
+<script src="js/navigation.js"></script>
+<script src="js/add-employee.js"></script>
+</body>
+</html>

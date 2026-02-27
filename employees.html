@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Philtech GMA | Employees Management</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/employees.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo-section">
+        <img src="assets/images/logo.png" class="logo" alt="Logo">
+        <h1>Philtech GMA</h1>
+    </div>
+</header>
+
+<div class="layout">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <h2 class="sidebar-title">💰 Payroll</h2>
+        <ul>
+  <li onclick="go('dashboard.html')">📊 Dashboard</li>
+<li onclick="go('employees.html')">👥 Employees</li>
+<li onclick="go('attendance.html')">📝 Attendance</li>
+<li onclick="go('payroll.html')">🧮 Payroll</li>
+<li onclick="go('payslip.html')">📄 Payslip</li>
+<li onclick="go('report.html')">📑 Report</li>
+<li onclick="go('user-mgmt.html')">👤 User Mgmt.</li>
+<li onclick="go('settings.html')">⚙ Settings</li>
+<li onclick="logout()">🚪 Logout</li>
+</ul>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="content">
+
+        <div class="page-header">
+            <div class="page-title">
+                <span class="icon">👥</span>
+                <h2>Employees Management</h2>
+            </div>
+
+            <div class="header-actions">
+                <div class="filter-container">
+                    <button class="filter-btn" id="filterBtn">
+                        Filter ▼
+                    </button>
+                    <div class="filter-dropdown" id="filterDropdown">
+                        <div onclick="filterType('Regular')">Regular</div>
+                        <div onclick="filterType('Contractual')">Contractual</div>
+                    </div>
+                </div>
+
+                <button class="add-btn" onclick="go('add-employee.html')">
+            </div>
+        </div>
+
+        <!-- TABLE CARD -->
+        <div class="table-card">
+
+            <table class="employee-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Position</th>
+                        <th>Type</th>
+                        <th>Salary</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody id="employeeBody">
+
+                    <tr data-type="Regular">
+                        <td>#1045</td>
+                        <td>Ayesha Nicole</td>
+                        <td>Teacher</td>
+                        <td>Regular</td>
+                        <td>₱4,500</td>
+                        <td>Active</td>
+                        <td class="actions">
+                            <button>✏</button>
+                            <button>🗑</button>
+                            <button>👁</button>
+                        </td>
+                    </tr>
+
+                    <tr data-type="Contractual">
+                        <td>#1046</td>
+                        <td>Ayesha Nicole</td>
+                        <td>Payroll Staff</td>
+                        <td>Contractual</td>
+                        <td>₱4,500</td>
+                        <td>Active</td>
+                        <td class="actions">
+                            <button>✏</button>
+                            <button>🗑</button>
+                            <button>👁</button>
+                        </td>
+                    </tr>
+
+                    <tr data-type="Contractual">
+                        <td>#1047</td>
+                        <td>Ayesha Nicole</td>
+                        <td>Admin Asst.</td>
+                        <td>Contractual</td>
+                        <td>₱4,500</td>
+                        <td>Pending</td>
+                        <td class="actions">
+                            <button>✏</button>
+                            <button>🗑</button>
+                            <button>👁</button>
+                        </td>
+                    </tr>
+
+                    <tr data-type="Regular">
+                        <td>#1048</td>
+                        <td>Ayesha Nicole</td>
+                        <td>Admin Asst.</td>
+                        <td>Regular</td>
+                        <td>₱4,500</td>
+                        <td>Active</td>
+                        <td class="actions">
+                            <button>✏</button>
+                            <button>🗑</button>
+                            <button>👁</button>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+
+            <div class="pagination">
+                ◀ 1–6 OF 30 ▶
+            </div>
+
+        </div>
+
+    </main>
+</div>
+<script src="js/navigation.js"></script>
+<script src="js/employees.js"></script>
+</body>
+</html>

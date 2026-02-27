@@ -1,18 +1,15 @@
-/* MAIN LAYOUT */
 body {
     background-color: #dcd3b8;
 }
 
+/* TOP BAR */
 .top-bar {
     background-color: #b0303b;
     color: #f4e8c1;
     display: flex;
+    justify-content: space-between;
     align-items: center;
     padding: 15px 40px;
-}
-
-.logo {
-    width: 50px;
 }
 
 .logo-section {
@@ -21,7 +18,32 @@ body {
     gap: 15px;
 }
 
-.main-container {
+.logo {
+    width: 50px;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-box input {
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    width: 250px;
+}
+
+.user-badge {
+    background-color: #d98989;
+    padding: 8px 20px;
+    border-radius: 20px;
+    font-weight: bold;
+}
+
+/* LAYOUT */
+.layout {
     display: flex;
 }
 
@@ -35,19 +57,23 @@ body {
     border-radius: 0 30px 30px 0;
 }
 
-.sidebar .menu {
+.sidebar-title {
+    margin-bottom: 30px;
+}
+
+.sidebar ul {
     list-style: none;
 }
 
-.sidebar .menu li {
+.sidebar li {
     padding: 12px;
     margin-bottom: 10px;
     border-radius: 10px;
     cursor: pointer;
 }
 
-.sidebar .menu li:hover,
-.sidebar .menu .active {
+.sidebar li:hover,
+.sidebar .active {
     background-color: #d98989;
 }
 
@@ -55,10 +81,24 @@ body {
 .content {
     flex: 1;
     padding: 40px;
+    position: relative;
+}
+
+.content::before {
+    content: "";
+    position: absolute;
+    background: url("../assets/images/logo.png") center no-repeat;
+    background-size: 500px;
+    opacity: 0.07;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
 }
 
 .page-title {
-    font-size: 32px;
+    font-size: 40px;
     margin-bottom: 30px;
     color: #b0303b;
 }
@@ -73,18 +113,18 @@ body {
 
 .card {
     background-color: #d98989;
-    padding: 20px;
-    border-radius: 20px;
+    padding: 25px;
+    border-radius: 25px;
     color: white;
 }
 
-.card-number {
-    font-size: 28px;
+.big-number {
+    font-size: 32px;
     margin: 10px 0;
 }
 
-/* CHARTS */
-.charts {
+/* CHART SECTION */
+.chart-section {
     display: grid;
     grid-template-columns: 2fr 1fr;
     gap: 20px;
@@ -92,7 +132,11 @@ body {
 
 .chart-box {
     background-color: #d98989;
-    padding: 20px;
-    border-radius: 20px;
+    padding: 25px;
+    border-radius: 25px;
     color: white;
+}
+
+.chart-box.large {
+    min-height: 300px;
 }

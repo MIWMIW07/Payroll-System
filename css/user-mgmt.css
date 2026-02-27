@@ -1,0 +1,130 @@
+body {
+  background-color: #dcd3b8;
+}
+
+/* HEADER */
+.top-bar {
+  background-color: #b0303b;
+  color: #f4e8c1;
+  padding: 15px 40px;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo { width: 50px; }
+
+.layout { display: flex; }
+
+/* SIDEBAR */
+.sidebar {
+  width: 230px;
+  background-color: #b0303b;
+  color: white;
+  padding: 30px 20px;
+  min-height: 100vh;
+  border-radius: 0 30px 30px 0;
+}
+
+.sidebar-title { margin-bottom: 30px; }
+
+.sidebar ul { list-style: none; }
+
+.sidebar li {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.sidebar li:hover,
+.sidebar .active {
+  background-color: #d98989;
+}
+
+/* CONTENT */
+.content {
+  flex: 1;
+  padding: 35px 40px;
+}
+
+/* PAGE HEAD */
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #b0303b;
+}
+
+.title h2 {
+  font-size: 40px;
+  font-weight: 900;
+}
+
+.add-btn {
+  background: #d98989;
+  border: none;
+  border-radius: 22px;
+  padding: 12px 20px;
+  color: white;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+/* TABLE CARD */
+.table-card {
+  background: rgba(217,137,137,0.92);
+  border-radius: 22px;
+  padding: 22px;
+  position: relative;
+}
+
+.table-watermark {
+  position: absolute;
+  inset: 0;
+  background: url("../assets/images/logo.png") center no-repeat;
+  background-size: 560px;
+  opacity: 0.09;
+  pointer-events: none;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #f4e8c1;
+  font-weight: 800;
+}
+
+.user-table th,
+.user-table td {
+  padding: 18px 10px;
+  border-top: 3px solid rgba(244,232,193,0.75);
+}
+
+.actions button {
+  background: #e8d79f;
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  margin-right: 5px;
+  cursor: pointer;
+}
+
+.pagination {
+  text-align: right;
+  margin-top: 15px;
+  font-weight: bold;
+  color: #b0303b;
+}
