@@ -31,14 +31,16 @@
 
             <div class="form-grid">
 
-                <input type="text" placeholder="Full Name" required>
-                <input type="number" placeholder="Base Salary" required>
+               <input type="text" id="fullName" placeholder="Full Name" required>
 
-                <input type="text" placeholder="Position" required>
-                <input type="email" placeholder="Email" required>
+                <input type="number" id="salary" placeholder="Base Salary" required>
+
+                <input type="text" id="position" placeholder="Position" required>
+
+                <input type="email" id="email" placeholder="Email" required>
 
                 <div class="dropdown-container">
-                    <input type="text" id="empType" placeholder="Employment Type" readonly required>
+                    <input type="text" id="employmentType" placeholder="Employment Type" readonly required>
                     <div class="dropdown-menu" id="dropdownMenu">
                         <div onclick="selectType('Regular')">Regular</div>
                         <div onclick="selectType('Contractual')">Contractual</div>

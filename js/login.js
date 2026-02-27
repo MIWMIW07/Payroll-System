@@ -8,16 +8,27 @@ togglePassword.addEventListener("click", () => {
 });
 
 // LOGIN FORM
-document.getElementById("loginForm").addEventListener("submit", function(e) {
-    e.preventDefault();
+document.getElementById("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
 
-    if(username === "admin" && password === "admin123") {
-        localStorage.setItem("isLoggedIn", "true");
-        window.location.href = "dashboard.html";
-    } else {
-        alert("Invalid credentials");
-    }
+  const res = await fetch("api/login.php", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username, password })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.error || "Login failed");
+    return;
+  }
+
+  localStorage.setItem("isLoggedIn", "true");
+  localStorage.setItem("user", JSON.stringify(data.user));
+
+  window.location.href = "dashboard.html";
 });
