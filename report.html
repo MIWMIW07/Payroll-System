@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philtech GMA | Reports</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #dcd3b8; }
+        .nav-link.active { background-color: #b0303b; color: white; }
+        .report-card { transition: all 0.3s ease; }
+        .report-card:hover { transform: translateY(-5px); box-shadow: 0 10px 25px -5px rgba(176, 48, 59, 0.2); }
+        /* Add to existing style section */
+        .group:hover .group-hover\:block {
+            display: block !important;
+        }
+
+        .user-dropdown {
+            position: absolute;
+            right: 0;
+            margin-top: 0.5rem;
+            width: 12rem;
+            background-color: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            padding: 0.5rem 0;
+            z-index: 50;
+            display: none;
+        }
+
+        .group:hover .user-dropdown {
+            display: block;
+        }
+    </style>
+</head>
+<body class="text-gray-700 antialiased min-h-screen">
+
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[#8a1f27] text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-[#b0303b] rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-file-invoice text-[#f4e8c1]"></i>
+            </div>
+            <span class="font-bold text-lg">Philtech GMA</span>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-1">
+            <a href="dashboardSadmin.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Dashboard</a>
+            <a href="employeesSadmin.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Employees</a>
+            <a href="payrollSadmin.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Payroll</a>
+            <a href="attendanceSadmin.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Attendance</a>
+            <a href="report.html" class="nav-link active px-4 py-2 rounded-lg bg-[#b0303b] text-white font-medium">Reports</a>
+            <a href="user-mgmt.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Users</a>
+            <a href="settingsSadmin.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Settings</a>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <span class="text-sm hidden sm:block" id="userName">Superadmin</span>
+            <div class="relative group">
+                <img src="https://i.pravatar.cc/150?u=superadmin" class="w-8 h-8 rounded-full border-2 border-white cursor-pointer">
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 hidden group-hover:block z-50">
+                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                    <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="p-6 md:p-8 max-w-7xl mx-auto">
+        
+        <!-- Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-[#8a1f27]">Reports</h1>
+                <p class="text-gray-500 text-sm mt-1" id="currentDate"></p>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <select class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#b0303b] focus:border-transparent bg-white">
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Summary Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-lg bg-[#b0303b]/10 text-[#b0303b] flex items-center justify-center">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <span class="text-sm text-gray-500">Total Employees</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800" id="totalEmployees">0</h3>
+                <p class="text-xs text-gray-400 mt-1">Active employees</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-lg bg-[#b0303b]/10 text-[#b0303b] flex items-center justify-center">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
+                    <span class="text-sm text-gray-500">Total Payroll</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800" id="totalPayroll">₱0</h3>
+                <p class="text-xs text-gray-400 mt-1">Year to date</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-lg bg-[#b0303b]/10 text-[#b0303b] flex items-center justify-center">
+                        <i class="fa-regular fa-clock"></i>
+                    </div>
+                    <span class="text-sm text-gray-500">Total Overtime</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800" id="totalOvertime">0 hrs</h3>
+                <p class="text-xs text-gray-400 mt-1">This year</p>
+            </div>
+            
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-lg bg-[#b0303b]/10 text-[#b0303b] flex items-center justify-center">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                    <span class="text-sm text-gray-500">Total Deductions</span>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800" id="totalDeductions">₱0</h3>
+                <p class="text-xs text-gray-400 mt-1">Year to date</p>
+            </div>
+        </div>
+
+        <!-- Report Types Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Monthly Payroll Report -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card cursor-pointer" onclick="generateReport('monthly')">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#b0303b]/10 rounded-xl flex items-center justify-center text-[#b0303b] text-xl">
+                        <i class="fa-solid fa-calculator"></i>
+                    </div>
+                    <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full">Monthly</span>
+                </div>
+                <h3 class="font-semibold text-gray-800 text-lg mb-2">Monthly Payroll</h3>
+                <p class="text-gray-500 text-sm mb-4">Complete payroll summary for each month</p>
+                <div class="flex items-center text-[#b0303b] text-sm">
+                    <span>Generate report</span>
+                    <i class="fa-solid fa-arrow-right ml-2"></i>
+                </div>
+            </div>
+
+            <!-- Employee Salary Report -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card cursor-pointer" onclick="generateReport('employee')">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#b0303b]/10 rounded-xl flex items-center justify-center text-[#b0303b] text-xl">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <span class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded-full">Per Employee</span>
+                </div>
+                <h3 class="font-semibold text-gray-800 text-lg mb-2">Employee Salary</h3>
+                <p class="text-gray-500 text-sm mb-4">Individual employee salary details</p>
+                <div class="flex items-center text-[#b0303b] text-sm">
+                    <span>Generate report</span>
+                    <i class="fa-solid fa-arrow-right ml-2"></i>
+                </div>
+            </div>
+
+            <!-- Deduction Summary -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card cursor-pointer" onclick="generateReport('deduction')">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#b0303b]/10 rounded-xl flex items-center justify-center text-[#b0303b] text-xl">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                    <span class="text-xs bg-yellow-100 text-yellow-600 px-2 py-1 rounded-full">Summary</span>
+                </div>
+                <h3 class="font-semibold text-gray-800 text-lg mb-2">Deduction Summary</h3>
+                <p class="text-gray-500 text-sm mb-4">All deductions (SSS, PhilHealth, Pag-IBIG, Tax)</p>
+                <div class="flex items-center text-[#b0303b] text-sm">
+                    <span>Generate report</span>
+                    <i class="fa-solid fa-arrow-right ml-2"></i>
+                </div>
+            </div>
+
+            <!-- Attendance Report -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card cursor-pointer" onclick="generateReport('attendance')">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#b0303b]/10 rounded-xl flex items-center justify-center text-[#b0303b] text-xl">
+                        <i class="fa-regular fa-calendar-check"></i>
+                    </div>
+                    <span class="text-xs bg-purple-100 text-purple-600 px-2 py-1 rounded-full">Monthly</span>
+                </div>
+                <h3 class="font-semibold text-gray-800 text-lg mb-2">Attendance Report</h3>
+                <p class="text-gray-500 text-sm mb-4">Employee attendance records and summaries</p>
+                <div class="flex items-center text-[#b0303b] text-sm">
+                    <span>Generate report</span>
+                    <i class="fa-solid fa-arrow-right ml-2"></i>
+                </div>
+            </div>
+
+            <!-- Tax Report -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card cursor-pointer" onclick="generateReport('tax')">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#b0303b]/10 rounded-xl flex items-center justify-center text-[#b0303b] text-xl">
+                        <i class="fa-solid fa-percent"></i>
+                    </div>
+                    <span class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded-full">Quarterly</span>
+                </div>
+                <h3 class="font-semibold text-gray-800 text-lg mb-2">Tax Report</h3>
+                <p class="text-gray-500 text-sm mb-4">Withholding tax summaries per employee</p>
+                <div class="flex items-center text-[#b0303b] text-sm">
+                    <span>Generate report</span>
+                    <i class="fa-solid fa-arrow-right ml-2"></i>
+                </div>
+            </div>
+
+            <!-- Year End Report -->
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 report-card cursor-pointer" onclick="generateReport('yearend')">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="w-12 h-12 bg-[#b0303b]/10 rounded-xl flex items-center justify-center text-[#b0303b] text-xl">
+                        <i class="fa-solid fa-calendar"></i>
+                    </div>
+                    <span class="text-xs bg-indigo-100 text-indigo-600 px-2 py-1 rounded-full">Annual</span>
+                </div>
+                <h3 class="font-semibold text-gray-800 text-lg mb-2">Year-End Summary</h3>
+                <p class="text-gray-500 text-sm mb-4">Annual payroll, deductions and net pay</p>
+                <div class="flex items-center text-[#b0303b] text-sm">
+                    <span>Generate report</span>
+                    <i class="fa-solid fa-arrow-right ml-2"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <h3 class="font-semibold text-gray-800 mb-4">Export Options</h3>
+            <div class="flex flex-wrap gap-4">
+                <button onclick="exportReport('pdf')" class="px-6 py-3 bg-[#b0303b] text-white rounded-lg hover:bg-[#8a1f27] transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i> Export as PDF
+                </button>
+                <button onclick="exportReport('excel')" class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-file-excel"></i> Export as Excel
+                </button>
+                <button onclick="exportReport('csv')" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-file-csv"></i> Export as CSV
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/database.js"></script>
+    <script src="js/navigation.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Database.ensureDatabaseReady();
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            
+            Database.Events.on(DB_EVENTS.ANY_CHANGE, loadStats);
+            await loadStats();
+        });
+
+        async function loadStats() {
+            const employees = await Database.getAllEmployees();
+            const payroll = await Database.getAllPayroll();
+            const attendance = await Database.getAllAttendance();
+            
+            document.getElementById('totalEmployees').textContent = employees.length;
+            
+            const totalPayroll = payroll.reduce((s, p) => s + (p.net_salary || 0), 0);
+            document.getElementById('totalPayroll').textContent = '₱' + totalPayroll.toLocaleString();
+            
+            const totalOvertime = attendance.reduce((s, a) => s + (a.ot_hours || a.overtime_hours || 0), 0);
+            document.getElementById('totalOvertime').textContent = totalOvertime + ' hrs';
+            
+            const totalDeductions = payroll.reduce((s, p) => s + (p.total_deduction || 0), 0);
+            document.getElementById('totalDeductions').textContent = '₱' + totalDeductions.toLocaleString();
+        }
+
+        function generateReport(type) {
+            const reportNames = {
+                monthly: 'Monthly Payroll Report',
+                employee: 'Employee Salary Report',
+                deduction: 'Deduction Summary',
+                attendance: 'Attendance Report',
+                tax: 'Tax Report',
+                yearend: 'Year-End Summary'
+            };
+            alert(`Generating ${reportNames[type] || 'report'}...\n\nThis feature will generate a detailed report based on your data.`);
+        }
+
+        function exportReport(format) {
+            alert(`Exporting as ${format.toUpperCase()}...\n\nThis feature will download the current report in ${format.toUpperCase()} format.`);
+        }
+    </script>
+</body>
+</html>
