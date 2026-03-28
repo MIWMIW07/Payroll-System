@@ -1,0 +1,23 @@
+# render.yaml
+services:
+  - type: web
+    name: philtech-payroll
+    runtime: php
+    repo: https://github.com/MIWMIW07/Payroll-System.git
+    branch: development
+    buildCommand: |
+      cp -r * /opt/render/project/src/
+    startCommand: php -S 0.0.0.0:10000
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: payroll-db
+          property: connectionString
+
+databases:
+  - name: payroll-db
+    databaseName: payroll_db
+    user: payroll_user
+    plan: free
