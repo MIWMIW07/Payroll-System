@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Employee - Philtech GMA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/edit-employee.css">
+</head>
+<body>
+
+<header class="top-bar">
+    <div class="logo-section">
+        <img src="assets/images/logo.png" class="logo" alt="Logo">
+        <h1>Philtech GMA</h1>
+    </div>
+
+    <button class="back-btn" onclick="go('employeesSadmin.html')">←</button>
+</header>
+
+<main class="form-wrapper">
+
+    <div class="form-card">
+
+        <div class="avatar-circle">✏️</div>
+
+        <h2>Edit employee</h2>
+
+        <form id="employeeForm">
+
+            <div class="form-grid">
+
+                <input type="hidden" id="employeeId">
+
+                <input type="text" id="fullName" placeholder="Full Name" required>
+
+                <input type="number" id="salary" placeholder="Base Salary" required>
+
+                <input type="text" id="position" placeholder="Position" required>
+
+                <input type="email" id="email" placeholder="Email" required>
+
+                <div class="dropdown-container">
+                    <input type="text" id="employmentType" placeholder="Employment Type" readonly required>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <div onclick="selectType('Regular')">Regular</div>
+                        <div onclick="selectType('Contractual')">Contractual</div>
+                        <div onclick="selectType('Admin')">Admin</div>
+                    </div>
+                </div>
+
+                <div class="dropdown-container">
+                    <input type="text" id="status" placeholder="Status" readonly required>
+                    <div class="dropdown-menu" id="statusMenu">
+                        <div onclick="selectStatus('Active')">Active</div>
+                        <div onclick="selectStatus('Inactive')">Inactive</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-buttons">
+                <button type="submit" class="save-btn">Update</button>
+                <button type="button" class="cancel-btn" onclick="go('employeesSadmin.html')">Cancel</button>
+            </div>
+
+        </form>
+
+    </div>
+
+</main>
+<script src="js/database.js"></script>
+<script src="js/navigation.js"></script>
+<script src="js/edit-employeeSadmin.js"></script>
+</body>
+</html>
+

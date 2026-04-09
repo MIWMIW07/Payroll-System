@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Philtech GMA | Payslip</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="css/global.css" />
+  <link rel="stylesheet" href="css/payslip.css" />
+</head>
+<body>
+
+<header class="top-bar">
+  <div class="logo-section">
+    <img src="assets/images/logo.png" class="logo" alt="Logo">
+    <h1>Philtech GMA</h1>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <h2 class="sidebar-title">💰 Payroll</h2>
+
+    <ul>
+      <li onclick="go('dashboard.html')">📊 Dashboard</li>
+<li onclick="go('employees.html')">👥 Employees</li>
+<li onclick="go('attendance.html')">📝 Attendance</li>
+<li onclick="go('payroll.html')">🧮 Payroll</li>
+<li onclick="go('payslip.html')">📄 Payslip</li>
+<li onclick="go('report.html')">📑 Report</li>
+<li onclick="go('settings.html')">⚙ Settings</li>
+<li onclick="logout()">🚪 Logout</li>
+    </ul>
+  </aside>
+
+  <!-- CONTENT -->
+  <main class="content">
+
+    <div class="page-head">
+      <div class="title">
+        <span class="title-icon">✉️</span>
+        <h2>Payslip</h2>
+      </div>
+    </div>
+
+    <!-- PAYSLIP CARD -->
+    <section class="payslip-card">
+      <div class="payslip-watermark"></div>
+
+      <div class="payslip-header">
+        <div class="info-box">
+          <div><span class="label">SCHOOL NAME:</span> <span class="value">PhilTech GMA</span></div>
+          <div><span class="label">Payroll Period:</span> <span class="value">June 2025</span></div>
+          <div><span class="label">Employee Name:</span> <span class="value">Ayesha Nicole</span></div>
+        </div>
+      </div>
+
+      <div class="payslip-lines">
+
+        <div class="line">
+          <div class="left">Base Salary</div>
+          <div class="dots"></div>
+          <div class="right">₱4,500</div>
+        </div>
+
+        <div class="line">
+          <div class="left">Overtime Pay</div>
+          <div class="dots"></div>
+          <div class="right">₱4,500</div>
+        </div>
+
+        <div class="line">
+          <div class="left">Gross Salary</div>
+          <div class="dots"></div>
+          <div class="right">₱4,500</div>
+        </div>
+
+        <div class="line">
+          <div class="left">Deduction (Tax, Benefits)</div>
+          <div class="dots"></div>
+          <div class="right">₱4,500</div>
+        </div>
+
+        <div class="line total">
+          <div class="left">Net Salary</div>
+          <div class="dots"></div>
+          <div class="right">₱4,500</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- BOTTOM BUTTONS -->
+    <div class="bottom-actions">
+      <button class="action-btn" id="exportBtn">📤 Export</button>
+      <button class="action-btn" id="printBtn">🖨 Print</button>
+      <button class="action-btn" id="backBtn">↩ Back</button>
+    </div>
+
+  </main>
+</div>
+<script src="js/database.js"></script>
+<script src="js/navigation.js"></script>
+<script src="js/payslipSadmin.js"></script>
+</body>
+</html>

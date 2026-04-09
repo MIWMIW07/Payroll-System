@@ -1,0 +1,11 @@
+# .htaccess
+RewriteEngine On
+
+# Redirect to api folder for API calls
+RewriteRule ^api/(.*)$ api/$1 [L]
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>
