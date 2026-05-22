@@ -85,10 +85,21 @@ try {
                 break;
             }
             
-            // Don't allow updating password via this endpoint
-            unset($data['password_hash']);
+            $plainPassword = trim((string)($data['password'] ?? ''));
+            $providedPasswordHash = trim((string)($data['password_hash'] ?? ''));
+
+            if ($plainPassword !== '') {
+                $data['password_hash'] = password_hash($plainPassword, PASSWORD_BCRYPT);
+            } elseif ($providedPasswordHash !== '') {
+                $hashInfo = password_get_info($providedPasswordHash);
+                $data['password_hash'] = $hashInfo['algo'] ? $providedPasswordHash : password_hash($providedPasswordHash, PASSWORD_BCRYPT);
+            } else {
+                unset($data['password_hash']);
+            }
+
+            unset($data['password']);
             
-            $db->updateUser((int)$data['id'], $data);
+            $db->updateUser($data);
             echo json_encode(['success' => true]);
             break;
         

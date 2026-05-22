@@ -13,6 +13,27 @@ if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
 
 header('Content-Type: application/json');
 
+function toPostgresTextArray($value): string {
+    if (!is_array($value)) {
+        $value = [$value];
+    }
+
+    $items = array_values(array_filter($value, static function($item) {
+        return $item !== null && trim((string)$item) !== '';
+    }));
+
+    if (empty($items)) {
+        return '{}';
+    }
+
+    $escaped = array_map(static function($item) {
+        $text = str_replace(['\\', '"'], ['\\\\', '\\"'], (string)$item);
+        return '"' . $text . '"';
+    }, $items);
+
+    return '{' . implode(',', $escaped) . '}';
+}
+
 try {
     $pdo = bootstrapGetPdo('require');
     
@@ -64,8 +85,9 @@ try {
                     $fields[] = $field;
                     $placeholders[] = ":$field";
                     
-                    // Handle array fields (JSON encode them)
-                    if (is_array($data[$field])) {
+                    if (in_array($field, ['subjects_shs', 'subjects_college'], true)) {
+                        $params[$field] = toPostgresTextArray($data[$field]);
+                    } elseif (is_array($data[$field])) {
                         $params[$field] = json_encode($data[$field]);
                     } else {
                         $params[$field] = $data[$field];
@@ -127,7 +149,9 @@ try {
             foreach ($allowedFields as $field) {
                 if (isset($data[$field])) {
                     $updates[] = "$field = :$field";
-                    if (is_array($data[$field])) {
+                    if (in_array($field, ['subjects_shs', 'subjects_college'], true)) {
+                        $params[$field] = toPostgresTextArray($data[$field]);
+                    } elseif (is_array($data[$field])) {
                         $params[$field] = json_encode($data[$field]);
                     } else {
                         $params[$field] = $data[$field];

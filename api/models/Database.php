@@ -122,6 +122,13 @@ class Database {
             'role'      => Sanitizer::sanitize($data['role']),
             'status'    => Sanitizer::sanitize($data['status'])
         ];
+
+        if (!empty($data['password_hash'])) {
+            $passwordInput = (string)$data['password_hash'];
+            $hashInfo = password_get_info($passwordInput);
+            $sanitized['password_hash'] = $hashInfo['algo'] ? $passwordInput : password_hash($passwordInput, PASSWORD_BCRYPT);
+        }
+
         return $this->update('users', $sanitized, 'id = ?', [Sanitizer::sanitizeInt($data['id'])]);
     }
 
