@@ -127,6 +127,33 @@
             font-size: 0.75rem;
             font-weight: 500;
         }
+
+        @media print {
+    body {
+        background: white;
+        padding: 0;
+        margin: 0;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .payslip-preview {
+        box-shadow: none;
+        max-height: none;
+        overflow: visible;
+    }
+    .payslip-pdf-container {
+        margin: 0;
+        padding: 0;
+    }
+    table {
+        page-break-inside: avoid;
+    }
+    .payslip-container {
+        page-break-after: avoid;
+        page-break-inside: avoid;
+    }
+}
     </style>
 </head>
 <body class="text-gray-700 antialiased min-h-screen">
