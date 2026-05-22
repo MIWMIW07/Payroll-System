@@ -26,8 +26,34 @@ try {
         
         case 'POST':
             $data = json_decode(file_get_contents("php://input"), true);
-            $result = $db->addEmployee($data);
-            echo json_encode(['success' => true, 'id' => $result]);
+            
+            // Build insert query with all fields
+            $fields = [];
+            $values = [];
+            $params = [];
+            
+            $allowedFields = [
+                'full_name', 'email', 'phone', 'birth_date', 'position', 'department',
+                'employment_type', 'hire_date', 'status', 'base_salary', 'hourly_rate',
+                'admin_pay_rate', 'assignment', 'rate_shs', 'rate_college', 'rate_admin',
+                'rate_guard', 'rate_sa', 'subjects_shs', 'subjects_college', 'admin_position',
+                'sss', 'philhealth', 'pagibig', 'tin', 'emergency_name', 'emergency_relation', 'emergency_phone'
+            ];
+            
+            foreach ($allowedFields as $field) {
+                if (isset($data[$field])) {
+                    $fields[] = $field;
+                    $values[] = ":$field";
+                    $params[$field] = is_array($data[$field]) ? json_encode($data[$field]) : $data[$field];
+                }
+            }
+            
+            $sql = "INSERT INTO employees (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $values) . ") RETURNING id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            $id = $stmt->fetchColumn();
+            
+            echo json_encode(['success' => true, 'id' => $id]);
             break;
         
         case 'PUT':

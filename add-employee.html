@@ -7,39 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Security Scripts -->
-    <script src="js/csrf.js"></script>
-    <script src="js/xss-protection.js"></script>
-    <script src="js/secure-ajax.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #dcd3b8; }
         .form-input:focus { ring: 2px solid #b0303b; border-color: transparent; }
-        /* Add to existing style section */
-        .group:hover .group-hover\:block {
-            display: block !important;
-        }
-
-        .user-dropdown {
-            position: absolute;
-            right: 0;
-            margin-top: 0.5rem;
-            width: 12rem;
-            background-color: white;
-            border-radius: 0.5rem;
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-            padding: 0.5rem 0;
-            z-index: 50;
-            display: none;
-        }
-
-        .group:hover .user-dropdown {
-            display: block;
-        }
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .spinner { width: 50px; height: 50px; border: 3px solid #f3f3f3; border-top: 3px solid #b0303b; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="text-gray-700 antialiased min-h-screen">
 
-    <!-- Top Navigation Bar -->
     <nav class="bg-[#8a1f27] text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 shadow-md">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-[#b0303b] rounded-lg flex items-center justify-center">
@@ -47,7 +24,6 @@
             </div>
             <span class="font-bold text-lg">Philtech GMA</span>
         </div>
-        
         <div class="hidden md:flex items-center gap-1">
             <a href="dashboardSadmin.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Dashboard</a>
             <a href="employeesSadmin.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Employees</a>
@@ -55,7 +31,6 @@
             <a href="attendanceSadmin.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Attendance</a>
             <a href="settingsSadmin.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Settings</a>
         </div>
-        
         <div class="flex items-center gap-3">
             <span class="text-sm hidden sm:block" id="userName">Superadmin</span>
             <div class="relative group">
@@ -67,10 +42,8 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="p-6 md:p-8 max-w-4xl mx-auto">
         
-        <!-- Header -->
         <div class="flex justify-between items-center mb-6">
             <div>
                 <h1 class="text-2xl font-bold text-[#8a1f27]">Add New Employee</h1>
@@ -81,7 +54,6 @@
             </button>
         </div>
 
-        <!-- Form Card -->
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
             <form id="employeeForm" class="space-y-6">
                 <!-- Personal Information -->
@@ -92,26 +64,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Full Name <span class="text-red-500">*</span></label>
-                            <input type="text" id="fullName" required 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="Enter full name">
+                            <input type="text" id="fullName" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address <span class="text-red-500">*</span></label>
-                            <input type="email" id="email" required 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="employee@philtech.edu">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="email" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                            <input type="tel" id="phone" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="(046) 123-4567">
+                            <input type="tel" id="phone" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Birth Date</label>
-                            <input type="date" id="birthDate" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                            <input type="date" id="birthDate" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                     </div>
                 </div>
@@ -123,21 +88,12 @@
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Employee ID</label>
-                            <input type="text" id="employeeId" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="Auto-generated" readonly>
-                        </div>
-                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Position <span class="text-red-500">*</span></label>
-                            <input type="text" id="position" required 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="e.g., Senior Teacher">
+                            <input type="text" id="position" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Department</label>
-                            <select id="department" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                            <select id="department" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                                 <option value="Academic">Academic</option>
                                 <option value="Administration">Administration</option>
                                 <option value="Finance">Finance</option>
@@ -146,8 +102,7 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Employment Type <span class="text-red-500">*</span></label>
-                            <select id="employmentType" required 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                            <select id="employmentType" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                                 <option value="Regular">Regular</option>
                                 <option value="Contractual">Contractual</option>
                                 <option value="Part-time">Part-time</option>
@@ -156,17 +111,93 @@
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Hire Date</label>
-                            <input type="date" id="hireDate" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                            <input type="date" id="hireDate" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                            <select id="status" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                            <select id="status" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                                 <option value="Active" selected>Active</option>
                                 <option value="Inactive">Inactive</option>
                                 <option value="On Leave">On Leave</option>
                             </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Employee Assignment -->
+                <div class="pt-4 border-t border-gray-100">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check text-[#b0303b]"></i> Employee Assignment
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Assignment Type <span class="text-red-500">*</span></label>
+                            <select id="assignmentType" required onchange="toggleAssignmentFields()" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                                <option value="shs_only">SHS Only</option>
+                                <option value="college_only">College Only</option>
+                                <option value="both">Both SHS and College</option>
+                                <option value="admin">Admin Staff</option>
+                                <option value="admin_college">Admin and College</option>
+                                <option value="admin_shs">Admin and SHS</option>
+                                <option value="admin_shs_college">Admin, SHS, and College</option>
+                                <option value="guard">Security Guard</option>
+                                <option value="sa">Student Assistant</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <div id="shsFields" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">SHS Rate (per hour)</label>
+                                    <input type="number" id="shsRate" step="0.01" value="80" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">SHS Subjects</label>
+                                    <input type="text" id="shsSubjects" placeholder="e.g., Math, Science" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="collegeFields" class="space-y-4 hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">College Rate (per hour)</label>
+                                    <input type="number" id="collegeRate" step="0.01" value="85" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">College Subjects</label>
+                                    <input type="text" id="collegeSubjects" placeholder="e.g., Calculus, Physics" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="adminFields" class="space-y-4 hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Admin Rate (per hour)</label>
+                                    <input type="number" id="adminRate" step="0.01" value="70" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Admin Position</label>
+                                    <input type="text" id="adminPosition" placeholder="e.g., Branch Administrator" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="guardFields" class="space-y-4 hidden">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Guard Daily Rate</label>
+                                <input type="number" id="guardRate" step="0.01" value="433" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                            </div>
+                        </div>
+
+                        <div id="saFields" class="space-y-4 hidden">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">SA Hourly Rate</label>
+                                <input type="number" id="saRate" step="0.01" value="100" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -178,30 +209,24 @@
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Base Salary <span class="text-red-500">*</span></label>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Base Salary</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                <input type="number" id="salary" required step="0.01"
-                                    class="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                    placeholder="0.00">
+                                <input type="number" id="salary" step="0.01" class="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Hourly Rate</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                <input type="number" id="hourlyRate" step="0.01"
-                                    class="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                    placeholder="0.00">
+                                <input type="number" id="hourlyRate" step="0.01" class="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                             </div>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Admin Pay Rate</label>
                             <div class="relative">
                                 <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                <input type="number" id="adminPayRate" step="0.01"
-                                    class="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                    placeholder="0.00">
+                                <input type="number" id="adminPayRate" step="0.01" class="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                             </div>
                         </div>
                     </div>
@@ -215,27 +240,19 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">SSS Number</label>
-                            <input type="text" id="sss" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="00-1234567-8">
+                            <input type="text" id="sss" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">PhilHealth Number</label>
-                            <input type="text" id="philhealth" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="12-345678901-2">
+                            <input type="text" id="philhealth" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Pag-IBIG Number</label>
-                            <input type="text" id="pagibig" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="1234-5678-9012">
+                            <input type="text" id="pagibig" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">TIN Number</label>
-                            <input type="text" id="tin" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="123-456-789-000">
+                            <input type="text" id="tin" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                     </div>
                 </div>
@@ -248,21 +265,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Contact Person</label>
-                            <input type="text" id="emergencyName" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="Full name">
+                            <input type="text" id="emergencyName" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Relationship</label>
-                            <input type="text" id="emergencyRelation" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="e.g., Spouse">
+                            <input type="text" id="emergencyRelation" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                            <input type="tel" id="emergencyPhone" 
-                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
-                                placeholder="(046) 123-4567">
+                            <input type="tel" id="emergencyPhone" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                         </div>
                     </div>
                 </div>
@@ -280,30 +291,63 @@
         </div>
     </main>
 
-    <script src="js/database.js"></script>
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;"><div class="spinner"></div></div>
+
     <script src="js/navigation.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            toggleAssignmentFields();
         });
+
+        function toggleAssignmentFields() {
+            const assignment = document.getElementById('assignmentType').value;
+            const hasShs = ['shs_only', 'both', 'admin_shs', 'admin_shs_college'].includes(assignment);
+            const hasCollege = ['college_only', 'both', 'admin_college', 'admin_shs_college'].includes(assignment);
+            const hasAdmin = ['admin', 'admin_college', 'admin_shs', 'admin_shs_college'].includes(assignment);
+            const isGuard = assignment === 'guard';
+            const isSA = assignment === 'sa';
+            
+            document.getElementById('shsFields').classList.toggle('hidden', !hasShs);
+            document.getElementById('collegeFields').classList.toggle('hidden', !hasCollege);
+            document.getElementById('adminFields').classList.toggle('hidden', !hasAdmin);
+            document.getElementById('guardFields').classList.toggle('hidden', !isGuard);
+            document.getElementById('saFields').classList.toggle('hidden', !isSA);
+        }
+
+        function showLoading(show) {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+        }
 
         document.getElementById('employeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
+            showLoading(true);
             
             try {
-                const employee = {
-                    full_name: document.getElementById('fullName').value,
-                    email: document.getElementById('email').value,
-                    phone: document.getElementById('phone').value,
+                const assignment = document.getElementById('assignmentType').value;
+                
+                const employeeData = {
+                    full_name: document.getElementById('fullName').value.trim(),
+                    email: document.getElementById('email').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
                     birth_date: document.getElementById('birthDate').value || null,
-                    position: document.getElementById('position').value,
+                    position: document.getElementById('position').value.trim(),
                     department: document.getElementById('department').value,
                     employment_type: document.getElementById('employmentType').value,
-                    hire_date: document.getElementById('hireDate').value || new Date().toISOString().split('T')[0],
+                    hire_date: document.getElementById('hireDate').value || null,
                     status: document.getElementById('status').value,
                     base_salary: parseFloat(document.getElementById('salary').value) || 0,
                     hourly_rate: parseFloat(document.getElementById('hourlyRate').value) || 0,
                     admin_pay_rate: parseFloat(document.getElementById('adminPayRate').value) || 0,
+                    assignment: assignment,
+                    rate_shs: parseFloat(document.getElementById('shsRate')?.value) || 0,
+                    rate_college: parseFloat(document.getElementById('collegeRate')?.value) || 0,
+                    rate_admin: parseFloat(document.getElementById('adminRate')?.value) || 0,
+                    rate_guard: parseFloat(document.getElementById('guardRate')?.value) || 0,
+                    rate_sa: parseFloat(document.getElementById('saRate')?.value) || 0,
+                    subjects_shs: document.getElementById('shsSubjects')?.value.split(',').map(s => s.trim()).filter(Boolean) || [],
+                    subjects_college: document.getElementById('collegeSubjects')?.value.split(',').map(s => s.trim()).filter(Boolean) || [],
+                    admin_position: document.getElementById('adminPosition')?.value || '',
                     sss: document.getElementById('sss').value,
                     philhealth: document.getElementById('philhealth').value,
                     pagibig: document.getElementById('pagibig').value,
@@ -312,31 +356,49 @@
                     emergency_relation: document.getElementById('emergencyRelation').value,
                     emergency_phone: document.getElementById('emergencyPhone').value
                 };
-
+                
+                // Remove empty fields
+                Object.keys(employeeData).forEach(key => {
+                    if (employeeData[key] === '' || employeeData[key] === null) {
+                        delete employeeData[key];
+                    }
+                });
+                
+                console.log("Saving employee to PostgreSQL:", employeeData);
+                
                 const response = await fetch('/api/employees.php', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
-                    body: JSON.stringify(employee)
+                    body: JSON.stringify(employeeData)
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to add employee');
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to add employee');
                 }
                 
                 const result = await response.json();
-                if (result.success) {
-                    alert('Employee added successfully!');
-                    window.location.href = 'employeesSadmin.html';
-                }
+                console.log("Employee saved:", result);
+                
+                alert('Employee added successfully!');
+                window.location.href = 'employeesSadmin.html';
+                
             } catch (error) {
                 console.error('Error adding employee:', error);
-                alert('Error adding employee. Please try again.');
+                alert('Error adding employee: ' + error.message);
+            } finally {
+                showLoading(false);
             }
         });
 
         function goBack() {
             window.location.href = 'employeesSadmin.html';
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'index.html';
         }
     </script>
 </body>
