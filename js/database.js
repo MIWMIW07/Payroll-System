@@ -30,12 +30,12 @@ async function ensureApiIntegration() {
             if (!response.ok) throw new Error(`API Error: ${response.status}`);
             return response.json();
         },
-        async getEmployees() { return this.call('/api/employees'); },
+        async getEmployees() { return this.call('/api/employees.php'); },
         async getEmployee(id) { return this.call(`/api/employee?id=${id}`); },
         async createEmployee(data) { return this.call('/api/employees', { method: 'POST', body: JSON.stringify(data) }); },
         async updateEmployee(id, data) { return this.call('/api/employees', { method: 'PUT', body: JSON.stringify({ ...data, id }) }); },
         async deleteEmployee(id) { return this.call(`/api/employees?id=${id}`, { method: 'DELETE' }); },
-        async getPayroll() { return this.call('/api/payroll'); },
+        async getPayroll() { return this.call('/api/payroll.php'); },
         async getPayrollById(id) { return this.call(`/api/payroll?id=${id}`); },
         async createPayroll(data) { return this.call('/api/payroll', { method: 'POST', body: JSON.stringify(data) }); },
         async updatePayroll(id, data) { return this.call('/api/payroll', { method: 'PUT', body: JSON.stringify({ ...data, id }) }); },
@@ -252,10 +252,27 @@ async function deleteFromStore(storeName, id) {
 // EMPLOYEES
 // ===========================
 async function getAllEmployees() {
-    const api = await ensureApiIntegration();
-    const employees = await api.getEmployees();
-    console.log("✓ Loaded " + (employees?.length || 0) + " employees from database");
-    return Array.isArray(employees) ? employees : [];
+    try {
+        // Direct fetch to correct endpoint with .php extension
+        const response = await fetch('/api/employees.php', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const employees = await response.json();
+        console.log("✓ Loaded " + (employees?.length || 0) + " employees from database");
+        return Array.isArray(employees) ? employees : [];
+    } catch (error) {
+        console.error("Error loading employees:", error);
+        return [];
+    }
 }
 
 async function getEmployeeById(id) {
@@ -447,10 +464,26 @@ async function deleteUser(id) {
 // PAYROLL
 // ===========================
 async function getAllPayroll() {
-    const api = await ensureApiIntegration();
-    const payroll = await api.getPayroll();
-    console.log("✓ Loaded " + (payroll?.length || 0) + " payroll records from database");
-    return Array.isArray(payroll) ? payroll : [];
+    try {
+        const response = await fetch('/api/payroll.php', {
+            method: 'GET',
+            credentials: 'include',
+            headers: {
+                'Cache-Control': 'no-cache'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        
+        const payroll = await response.json();
+        console.log("✓ Loaded " + (payroll?.length || 0) + " payroll records from database");
+        return Array.isArray(payroll) ? payroll : [];
+    } catch (error) {
+        console.error("Error loading payroll:", error);
+        return [];
+    }
 }
 
 async function getPayrollById(id) {
