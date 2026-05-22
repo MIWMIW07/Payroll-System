@@ -98,10 +98,15 @@ class Database {
     }
 
     public function addUser(array $data): int {
+        $passwordInput = (string)($data['password_hash'] ?? $data['password'] ?? '');
+        $hashInfo = password_get_info($passwordInput);
+        $passwordHash = $hashInfo['algo'] ? $passwordInput : password_hash($passwordInput, PASSWORD_BCRYPT);
+        $fullName = trim((string)($data['full_name'] ?? '')) ?: (string)($data['username'] ?? '');
+
         return $this->insert('users', [
             'username'     => Sanitizer::sanitize($data['username']),
-            'password_hash'=> Sanitizer::sanitize($data['password_hash']),
-            'full_name'    => Sanitizer::sanitize($data['full_name']),
+            'password_hash'=> $passwordHash,
+            'full_name'    => Sanitizer::sanitize($fullName),
             'email'        => Sanitizer::sanitizeEmail($data['email'] ?? ''),
             'phone'        => Sanitizer::sanitizePhone($data['phone'] ?? ''),
             'role'         => Sanitizer::sanitize($data['role'] ?? 'teacher'),

@@ -47,11 +47,31 @@ try {
             $input = file_get_contents("php://input");
             $data = json_decode($input, true);
             
-            if (!isset($data['username']) || !isset($data['password_hash']) || !isset($data['full_name']) || !isset($data['role'])) {
+            if (!is_array($data)) {
                 http_response_code(400);
-                echo json_encode(['error' => 'Missing required fields: username, password_hash, full_name, role']);
+                echo json_encode(['error' => 'Invalid JSON payload']);
                 break;
             }
+
+            $plainPassword = trim((string)($data['password'] ?? ''));
+            $providedPasswordHash = trim((string)($data['password_hash'] ?? ''));
+
+            if (empty($data['username']) || ($plainPassword === '' && $providedPasswordHash === '') || empty($data['role'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Missing required fields: username, password, role']);
+                break;
+            }
+
+            $data['full_name'] = trim((string)($data['full_name'] ?? '')) ?: $data['username'];
+
+            if ($plainPassword !== '') {
+                $data['password_hash'] = password_hash($plainPassword, PASSWORD_BCRYPT);
+            } else {
+                $hashInfo = password_get_info($providedPasswordHash);
+                $data['password_hash'] = $hashInfo['algo'] ? $providedPasswordHash : password_hash($providedPasswordHash, PASSWORD_BCRYPT);
+            }
+
+            unset($data['password']);
             
             $id = $db->addUser($data);
             echo json_encode(['success' => true, 'id' => $id]);
