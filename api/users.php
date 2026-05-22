@@ -7,19 +7,22 @@ require_once __DIR__ . '/middleware/sanitize.php';
 
 require_auth();
 
-// Only superadmin can manage users
+// Superadmin and accountant can manage employee-linked login accounts.
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-    requireRole(['superadmin']);
+    requireRole(['superadmin', 'accountant']);
 }
 
 require_once __DIR__ . '/models/SecureDatabase.php';
 
 try {
     $db = new SecureDatabase();
+    $db->query("ALTER TABLE users ADD COLUMN IF NOT EXISTS linked_employee INTEGER REFERENCES employees(id) ON DELETE SET NULL");
+    $db->query("CREATE INDEX IF NOT EXISTS idx_users_linked_employee ON users(linked_employee)");
     
     switch ($_SERVER['REQUEST_METHOD']) {
         case 'GET':
             $id = $_GET['id'] ?? null;
+            $linkedEmployee = $_GET['linked_employee'] ?? null;
             
             if ($id) {
                 // Get single user
@@ -30,6 +33,15 @@ try {
                     break;
                 }
                 // Remove sensitive data
+                unset($user['password_hash']);
+                echo json_encode($user);
+            } elseif ($linkedEmployee !== null && $linkedEmployee !== '') {
+                $user = $db->getUserByLinkedEmployee((int)$linkedEmployee);
+                if (!$user) {
+                    http_response_code(404);
+                    echo json_encode(['error' => 'User not found']);
+                    break;
+                }
                 unset($user['password_hash']);
                 echo json_encode($user);
             } else {

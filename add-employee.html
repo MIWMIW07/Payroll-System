@@ -308,7 +308,7 @@
                             <select id="userRole" required class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
                                 <option value="">-- Select Role --</option>
                                 <option value="teacher">Teacher / Faculty</option>
-                                <option value="admin-staff">Admin Staff</option>
+                                <option value="admin">Admin Staff</option>
                                 <option value="guard">Security Guard</option>
                                 <option value="sa">Student Assistant</option>
                             </select>
@@ -363,6 +363,22 @@
             
             try {
                 const assignment = document.getElementById('assignmentType').value;
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const userRole = document.getElementById('userRole').value;
+
+                if (!username || !password || !userRole) {
+                    throw new Error('Username, password, and user role are required');
+                }
+
+                if (password !== confirmPassword) {
+                    throw new Error('Passwords do not match');
+                }
+
+                if (password.length < 6) {
+                    throw new Error('Password must be at least 6 characters');
+                }
                 
                 const employeeData = {
                     full_name: document.getElementById('fullName').value.trim(),
@@ -418,8 +434,15 @@
                 
                 const result = await response.json();
                 console.log("Employee saved:", result);
+
+                await createUserForEmployee({
+                    ...employeeData,
+                    id: result.id,
+                    username,
+                    role: userRole
+                }, password);
                 
-                alert('Employee added successfully!');
+                alert('Employee and login account added successfully!');
                 window.location.href = 'employeesSadmin.html';
                 
             } catch (error) {
@@ -433,11 +456,11 @@
         // After successfully adding employee, create a user account
         async function createUserForEmployee(employee, password) {
             const userData = {
-                username: employee.email.split('@')[0], // Use email prefix as username
-                password_hash: password || 'password123', // Default password
+                username: employee.username,
+                password,
                 full_name: employee.full_name,
                 email: employee.email,
-                role: mapAssignmentToRole(employee.assignment),
+                role: employee.role || mapAssignmentToRole(employee.assignment),
                 status: 'Active',
                 linked_employee: employee.id
             };
@@ -448,7 +471,12 @@
                 credentials: 'include',
                 body: JSON.stringify(userData)
             });
-            
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || 'Employee saved, but login account creation failed');
+            }
+
             return response.json();
         }
 
@@ -459,7 +487,10 @@
                 case 'both':
                     return 'teacher';
                 case 'admin':
-                    return 'accountant';
+                case 'admin_college':
+                case 'admin_shs':
+                case 'admin_shs_college':
+                    return 'admin';
                 case 'guard':
                     return 'guard';
                 case 'sa':

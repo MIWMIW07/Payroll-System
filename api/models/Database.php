@@ -92,8 +92,13 @@ class Database {
         return $this->fetchOne($sql, [Sanitizer::sanitizeInt($id)]);
     }
 
+    public function getUserByLinkedEmployee(int $employeeId): ?array {
+        $sql = "SELECT * FROM users WHERE linked_employee = ? LIMIT 1";
+        return $this->fetchOne($sql, [Sanitizer::sanitizeInt($employeeId)]);
+    }
+
     public function getAllUsers(): array {
-        $sql = "SELECT id, username, full_name, email, phone, role, status, created_at FROM users ORDER BY id";
+        $sql = "SELECT id, username, full_name, email, phone, role, status, linked_employee, created_at FROM users ORDER BY id";
         return $this->fetchAll($sql);
     }
 
@@ -110,6 +115,7 @@ class Database {
             'email'        => Sanitizer::sanitizeEmail($data['email'] ?? ''),
             'phone'        => Sanitizer::sanitizePhone($data['phone'] ?? ''),
             'role'         => Sanitizer::sanitize($data['role'] ?? 'teacher'),
+            'linked_employee' => isset($data['linked_employee']) && $data['linked_employee'] !== '' ? Sanitizer::sanitizeInt($data['linked_employee']) : null,
             'status'       => Sanitizer::sanitize($data['status'] ?? 'Active')
         ]);
     }
@@ -122,6 +128,16 @@ class Database {
             'role'      => Sanitizer::sanitize($data['role']),
             'status'    => Sanitizer::sanitize($data['status'])
         ];
+
+        if (isset($data['username']) && trim((string)$data['username']) !== '') {
+            $sanitized['username'] = Sanitizer::sanitize($data['username']);
+        }
+
+        if (array_key_exists('linked_employee', $data)) {
+            $sanitized['linked_employee'] = $data['linked_employee'] !== null && $data['linked_employee'] !== ''
+                ? Sanitizer::sanitizeInt($data['linked_employee'])
+                : null;
+        }
 
         if (!empty($data['password_hash'])) {
             $passwordInput = (string)$data['password_hash'];

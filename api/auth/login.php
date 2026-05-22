@@ -22,6 +22,7 @@ try {
     $dsn = "pgsql:host=$host;port=$port;dbname=$dbname;sslmode=require";
     $pdo = new PDO($dsn, $user, $pass);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    $pdo->exec("ALTER TABLE users ADD COLUMN IF NOT EXISTS linked_employee INTEGER");
     
     $input = json_decode(file_get_contents("php://input"), true);
     $username = $input['username'] ?? '';
@@ -32,7 +33,7 @@ try {
         exit;
     }
     
-    $stmt = $pdo->prepare("SELECT id, username, password_hash, role, full_name, email, status FROM users WHERE username = :username");
+    $stmt = $pdo->prepare("SELECT id, username, password_hash, role, full_name, email, status, linked_employee FROM users WHERE username = :username");
     $stmt->execute([':username' => $username]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     
@@ -61,7 +62,8 @@ try {
         'username' => $user['username'],
         'full_name' => $user['full_name'],
         'role' => $user['role'],
-        'email' => $user['email'] ?? ''
+        'email' => $user['email'] ?? '',
+        'employee_id' => $user['linked_employee'] ?? null
     ];
     $_SESSION['login_time'] = time();
     

@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
     email VARCHAR(120),
     phone VARCHAR(20),
     role VARCHAR(20) DEFAULT 'teacher',
+    linked_employee INTEGER,
     status VARCHAR(20) DEFAULT 'Active',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -75,6 +76,9 @@ CREATE TABLE IF NOT EXISTS employees (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS linked_employee INTEGER;
+CREATE INDEX IF NOT EXISTS idx_users_linked_employee ON users(linked_employee);
 
 -- Teacher Loads table
 CREATE TABLE IF NOT EXISTS teacher_loads (

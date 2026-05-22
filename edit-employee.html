@@ -342,6 +342,40 @@
                     </div>
                 </div>
 
+                <!-- Login Credentials -->
+                <div class="pt-4 border-t border-gray-100">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-key text-[#b0303b]"></i> Login Credentials
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Username <span class="text-red-500">*</span></label>
+                            <input type="text" id="username" required
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" id="password"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"
+                                placeholder="Leave blank to keep current">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                            <input type="password" id="confirmPassword"
+                                class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">User Role</label>
+                            <select id="userRole" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                                <option value="teacher">Teacher / Faculty</option>
+                                <option value="admin">Admin Staff</option>
+                                <option value="guard">Security Guard</option>
+                                <option value="sa">Student Assistant</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Form Actions -->
                 <div class="flex justify-end gap-3 pt-4 border-t border-gray-100">
                     <button type="button" onclick="goBack()" class="px-6 py-2 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors">
@@ -359,6 +393,7 @@
     <script src="js/navigation.js"></script>
     <script>
         let employeeId = null;
+        let linkedUserId = null;
 
         document.addEventListener('DOMContentLoaded', async () => {
             await Database.ensureDatabaseReady();
@@ -431,6 +466,7 @@
                 document.getElementById('emergencyName').value = employee.emergency_name || '';
                 document.getElementById('emergencyRelation').value = employee.emergency_relation || '';
                 document.getElementById('emergencyPhone').value = employee.emergency_phone || '';
+                await loadLinkedUser(employee);
                 
             } catch (error) {
                 console.error('Error loading employee:', error);
@@ -438,10 +474,55 @@
             }
         }
 
+        async function loadLinkedUser(employee) {
+            try {
+                const response = await fetch(`/api/users.php?linked_employee=${employee.id}`, {
+                    credentials: 'include'
+                });
+
+                if (response.ok) {
+                    const user = await response.json();
+                    linkedUserId = user.id;
+                    document.getElementById('username').value = user.username || '';
+                    document.getElementById('userRole').value = user.role || mapAssignmentToRole(employee.assignment);
+                    return;
+                }
+            } catch (error) {
+                console.warn('Could not load linked user:', error);
+            }
+
+            linkedUserId = null;
+            document.getElementById('username').value = employee.email ? employee.email.split('@')[0] : '';
+            document.getElementById('userRole').value = mapAssignmentToRole(employee.assignment);
+        }
+
         document.getElementById('employeeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             try {
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                const userRole = document.getElementById('userRole').value;
+
+                if (!username) {
+                    throw new Error('Username is required');
+                }
+
+                if (password || confirmPassword) {
+                    if (password !== confirmPassword) {
+                        throw new Error('Passwords do not match');
+                    }
+
+                    if (password.length < 6) {
+                        throw new Error('Password must be at least 6 characters');
+                    }
+                }
+
+                if (!linkedUserId && !password) {
+                    throw new Error('Password is required when creating a login account');
+                }
+
                 const updatedEmployee = {
                     id: employeeId,
                     employee_id: document.getElementById('employeeIdField').value,
@@ -486,6 +567,7 @@
                 
                 const result = await response.json();
                 if (result.success) {
+                    await saveLinkedUser(updatedEmployee, { username, password, role: userRole });
                     alert('Employee updated successfully!');
                     window.location.href = 'employees.html';
                 }
@@ -494,6 +576,34 @@
                 alert('Error updating employee. Please try again.');
             }
         });
+
+        async function saveLinkedUser(employee, credentials) {
+            const userData = {
+                username: credentials.username,
+                full_name: employee.full_name,
+                email: employee.email,
+                phone: employee.phone,
+                role: credentials.role,
+                status: employee.status === 'Inactive' ? 'Inactive' : 'Active',
+                linked_employee: employee.id
+            };
+
+            if (credentials.password) {
+                userData.password = credentials.password;
+            }
+
+            const response = await fetch('/api/users.php', {
+                method: linkedUserId ? 'PUT' : 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(linkedUserId ? { id: linkedUserId, ...userData } : userData)
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || 'Failed to save login account');
+            }
+        }
 
         function goBack() {
             window.location.href = 'employees.html';
@@ -515,6 +625,22 @@
             Object.entries(sections).forEach(([id, shouldShow]) => {
                 document.getElementById(id).classList.toggle('hidden', !shouldShow);
             });
+        }
+
+        function mapAssignmentToRole(assignment) {
+            switch (assignment) {
+                case 'admin':
+                case 'admin_college':
+                case 'admin_shs':
+                case 'admin_shs_college':
+                    return 'admin';
+                case 'guard':
+                    return 'guard';
+                case 'sa':
+                    return 'sa';
+                default:
+                    return 'teacher';
+            }
         }
     </script>
 </body>

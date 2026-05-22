@@ -134,7 +134,7 @@ window.goToPage = function(page) {
 };
 
 window.editEmployee = function(id) {
-    window.location.href = "edit-employeeSadmin.html?id=" + id;
+    window.location.href = "edit-employee.html?id=" + id;
 };
 
 window.viewEmployee = function(id) {

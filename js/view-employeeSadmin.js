@@ -210,7 +210,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     const editBtn = document.getElementById("editBtn");
     if (editBtn) {
         editBtn.addEventListener("click", () => {
-            window.location.href = `edit-employeeSadmin.html?id=${employeeId}`;
+            window.location.href = `edit-employee.html?id=${employeeId}`;
         });
     }
 });
