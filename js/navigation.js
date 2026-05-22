@@ -54,14 +54,14 @@ const rolePages = {
     ],
     guard: [
         'dashboard-guard.html',
-        'my-attendance.html',
-        'my-payslips.html',
+        'guard-attendance.html',
+        'guard-payslips.html',
         'staff-profile.html'
     ],
     sa: [
         'dashboard-sa.html',
-        'my-attendance.html',
-        'my-payslips.html',
+        'sa-attendance.html',
+        'sa-payslips.html',
         'staff-profile.html'
     ],
     'admin-staff': [
@@ -509,8 +509,8 @@ function getAttendanceUrl() {
     const role = normalizeRole(window.currentUser?.role);
     if (role === 'superadmin') return 'dashboardSadmin.html';
     if (role === 'accountant') return 'attendance.html';
-    if (role === 'guard') return 'my-attendance.html';
-    if (role === 'sa') return 'my-attendance.html';
+    if (role === 'guard') return 'guard-attendance.html';
+    if (role === 'sa') return 'sa-attendance.html';
     if (role === 'admin-staff' || role === 'admin') return 'my-attendance.html';
     return 'teacher-attendance.html';
 }
@@ -519,8 +519,8 @@ function getPayrollUrl() {
     const role = normalizeRole(window.currentUser?.role);
     if (role === 'superadmin') return 'payrollSadmin.html';
     if (role === 'accountant') return 'payroll.html';
-    if (role === 'guard') return 'my-payslips.html';
-    if (role === 'sa') return 'my-payslips.html';
+    if (role === 'guard') return 'guard-payslips.html';
+    if (role === 'sa') return 'sa-payslips.html';
     if (role === 'admin-staff' || role === 'admin') return 'my-payslips.html';
     return 'teacher-payslips.html';
 }
