@@ -256,39 +256,6 @@
                 </div>
 
 
-                <!-- Compensation -->
-                <div class="pt-4 border-t border-gray-100">
-                    <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-money-bill-wave text-[#b0303b]"></i> Compensation
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Base Salary <span class="text-red-500">*</span></label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                <input type="number" id="salary" required step="0.01"
-                                    class="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Hourly Rate</label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                <input type="number" id="hourlyRate" step="0.01"
-                                    class="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Admin Pay Rate</label>
-                            <div class="relative">
-                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                <input type="number" id="adminPayRate" step="0.01"
-                                    class="w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Government Numbers -->
                 <div class="pt-4 border-t border-gray-100">
                     <h2 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
@@ -437,9 +404,6 @@
                 document.getElementById('employmentType').value = employee.employment_type || 'Regular';
                 document.getElementById('hireDate').value = employee.hire_date || '';
                 document.getElementById('status').value = employee.status || 'Active';
-                document.getElementById('salary').value = employee.base_salary || 0;
-                document.getElementById('hourlyRate').value = employee.hourly_rate || 0;
-                document.getElementById('adminPayRate').value = employee.admin_pay_rate || 0;
                 document.getElementById('assignmentType').value = employee.assignment || 'shs_only';
                 document.getElementById('shsRate').value = employee.rate_shs ?? 80;
                 document.getElementById('shsSubjects').value = Array.isArray(employee.subjects_shs) ? employee.subjects_shs.join(', ') : '';
@@ -523,9 +487,6 @@
                     employment_type: document.getElementById('employmentType').value,
                     hire_date: document.getElementById('hireDate').value || null,
                     status: document.getElementById('status').value,
-                    base_salary: parseFloat(document.getElementById('salary').value) || 0,
-                    hourly_rate: parseFloat(document.getElementById('hourlyRate').value) || 0,
-                    admin_pay_rate: parseFloat(document.getElementById('adminPayRate').value) || 0,
                     assignment: document.getElementById('assignmentType').value,
                     rate_shs: parseFloat(document.getElementById('shsRate').value) || 0,
                     rate_college: parseFloat(document.getElementById('collegeRate').value) || 0,
