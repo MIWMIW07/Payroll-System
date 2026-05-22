@@ -113,6 +113,11 @@
             padding: 12px;
             margin-top: 10px;
         }
+        .form-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px #b0303b;
+            border-color: transparent;
+        }
     </style>
 </head>
 <body class="text-gray-700 antialiased min-h-screen">
@@ -158,7 +163,7 @@
                     <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"></i>
                     <input type="text" id="searchInput" placeholder="Search employees..." class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
                 </div>
-                <button onclick="window.location.href='add-employee.html'" class="bg-[#b0303b] text-white px-4 py-2 rounded-lg hover:bg-[#8a1f27] transition-colors flex items-center gap-2">
+                <button onclick="openAddEmployeeModal()" class="bg-[#b0303b] text-white px-4 py-2 rounded-lg hover:bg-[#8a1f27] transition-colors flex items-center gap-2">
                     <i class="fa-solid fa-plus"></i> Add Employee
                 </button>
             </div>
@@ -256,126 +261,184 @@
                 <h3 class="text-xl font-bold text-[#8a1f27] mb-4">Employee Information</h3>
                 
                 <form id="employeeForm" class="space-y-4">
-                    <!-- Basic Info (Common for all) -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
-                            <input type="text" id="fullName" required class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                            <input type="email" id="email" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                            <input type="tel" id="phone" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Position</label>
-                            <input type="text" id="position" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
-                            <select id="department" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
-                                <option value="Academic">Academic</option>
-                                <option value="Administration">Administration</option>
-                                <option value="Finance">Finance</option>
-                                <option value="Maintenance">Maintenance</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Hire Date</label>
-                            <input type="date" id="hireDate" class="w-full px-3 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b]">
+                    <!-- Personal Information -->
+                    <div>
+                        <h4 class="font-semibold text-gray-800 mb-3">Personal Information</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Full Name <span class="text-red-500">*</span></label>
+                                <input type="text" id="fullName" required class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                <input type="email" id="email" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                                <input type="tel" id="phone" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Birth Date</label>
+                                <input type="date" id="birthDate" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Faculty Specific Fields (SHS/College) -->
-                    <div id="facultyFields" style="display: none;">
-                        <div class="border-t pt-4 mt-2">
-                            <h4 class="font-semibold text-gray-800 mb-3">Faculty Assignment</h4>
+                    <!-- Employment Details -->
+                    <div class="border-t pt-4 mt-2">
+                        <h4 class="font-semibold text-gray-800 mb-3">Employment Details</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Position <span class="text-red-500">*</span></label>
+                                <input type="text" id="position" required class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Department</label>
+                                <select id="department" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                                    <option value="Academic">Academic</option>
+                                    <option value="Administration">Administration</option>
+                                    <option value="Finance">Finance</option>
+                                    <option value="Maintenance">Maintenance</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Employment Type <span class="text-red-500">*</span></label>
+                                <select id="employmentType" required class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                                    <option value="Regular">Regular</option>
+                                    <option value="Contractual">Contractual</option>
+                                    <option value="Part-time">Part-time</option>
+                                    <option value="Probationary">Probationary</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hire Date</label>
+                                <input type="date" id="hireDate" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                                <select id="status" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                                    <option value="Active">Active</option>
+                                    <option value="Inactive">Inactive</option>
+                                    <option value="On Leave">On Leave</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Employee Assignment -->
+                    <div class="border-t pt-4 mt-2">
+                        <h4 class="font-semibold text-gray-800 mb-3">Employee Assignment</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Assignment Type <span class="text-red-500">*</span></label>
+                                <select id="assignmentType" required onchange="toggleAssignmentFields()" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                                    <option value="shs_only">SHS Only</option>
+                                    <option value="college_only">College Only</option>
+                                    <option value="both">Both SHS and College</option>
+                                    <option value="admin">Admin Staff</option>
+                                    <option value="admin_college">Admin and College</option>
+                                    <option value="admin_shs">Admin and SHS</option>
+                                    <option value="admin_shs_college">Admin, SHS, and College</option>
+                                    <option value="guard">Security Guard</option>
+                                    <option value="sa">Student Assistant</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div id="shsFields" class="space-y-4 mt-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Assignment Type</label>
-                                    <select id="facultyAssignment" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                                        <option value="shs_only">SHS Only</option>
-                                        <option value="college_only">College Only</option>
-                                        <option value="both">Both SHS and College</option>
-                                    </select>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">SHS Rate (per hour)</label>
+                                    <input type="number" id="shsRate" step="0.01" value="80" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate</label>
-                                    <input type="number" id="hourlyRate" step="0.01" class="w-full px-3 py-2 border border-gray-200 rounded-lg" placeholder="₱ per hour">
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">SHS Subjects</label>
+                                    <input type="text" id="shsSubjects" placeholder="e.g., Math, Science" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
                                 </div>
                             </div>
-                            <div id="shsSubjectsDiv" class="mt-3">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">SHS Subjects</label>
-                                <input type="text" id="shsSubjects" class="w-full px-3 py-2 border border-gray-200 rounded-lg" placeholder="e.g., Math, Science, English">
-                            </div>
-                            <div id="collegeSubjectsDiv" class="mt-3" style="display: none;">
-                                <label class="block text-sm font-medium text-gray-700 mb-1">College Subjects</label>
-                                <input type="text" id="collegeSubjects" class="w-full px-3 py-2 border border-gray-200 rounded-lg" placeholder="e.g., Calculus, Physics">
-                            </div>
                         </div>
-                    </div>
 
-                    <!-- Admin Specific Fields -->
-                    <div id="adminFields" style="display: none;">
-                        <div class="border-t pt-4 mt-2">
-                            <h4 class="font-semibold text-gray-800 mb-3">Admin Compensation</h4>
+                        <div id="collegeFields" class="space-y-4 mt-4" style="display: none;">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Monthly Base Salary</label>
-                                    <div class="relative">
-                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                        <input type="number" id="baseSalary" step="0.01" class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg" placeholder="0.00" oninput="calculateAdminDailyRate()">
-                                    </div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">College Rate (per hour)</label>
+                                    <input type="number" id="collegeRate" step="0.01" value="85" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
                                 </div>
                                 <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Daily Rate (Auto-calculated)</label>
-                                    <div class="relative">
-                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                        <input type="text" id="dailyRateDisplay" readonly class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg bg-gray-50">
-                                    </div>
-                                    <p class="text-xs text-gray-400 mt-1">Based on 22 working days per month</p>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">College Subjects</label>
+                                    <input type="text" id="collegeSubjects" placeholder="e.g., Calculus, Physics" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
                                 </div>
                             </div>
-                            <div class="calculation-preview mt-3" id="adminPreview">
-                                <p class="text-sm font-medium text-gray-700">Preview:</p>
-                                <p class="text-sm">Monthly Salary: <span id="previewMonthly">₱0.00</span></p>
-                                <p class="text-sm">Daily Rate: <span id="previewDaily">₱0.00</span></p>
-                                <p class="text-sm">Hourly Rate (equivalent): <span id="previewHourly">₱0.00</span></p>
+                        </div>
+
+                        <div id="adminFields" class="space-y-4 mt-4" style="display: none;">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Admin Rate (per hour)</label>
+                                    <input type="number" id="adminRate" step="0.01" value="70" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Admin Position</label>
+                                    <input type="text" id="adminPosition" placeholder="e.g., Branch Administrator" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="guardFields" class="space-y-4 mt-4" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Guard Daily Rate</label>
+                            <input type="number" id="guardRate" step="0.01" value="433" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                        </div>
+
+                        <div id="saFields" class="space-y-4 mt-4" style="display: none;">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">SA Hourly Rate</label>
+                            <input type="number" id="saRate" step="0.01" value="100" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                        </div>
+                    </div>
+
+                    <!-- Compensation -->
+                    <div class="border-t pt-4 mt-2">
+                        <h4 class="font-semibold text-gray-800 mb-3">Compensation</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Base Salary</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
+                                    <input type="number" id="salary" step="0.01" class="form-input w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
+                                    <input type="number" id="hourlyRate" step="0.01" class="form-input w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Admin Pay Rate</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
+                                    <input type="number" id="adminPayRate" step="0.01" class="form-input w-full pl-8 pr-4 py-2 border border-gray-200 rounded-lg">
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Guard Specific Fields -->
-                    <div id="guardFields" style="display: none;">
-                        <div class="border-t pt-4 mt-2">
-                            <h4 class="font-semibold text-gray-800 mb-3">Guard Compensation</h4>
-                            <div class="grid grid-cols-1 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Daily Rate</label>
-                                    <div class="relative">
-                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                        <input type="number" id="guardDailyRate" step="0.01" value="433" class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg">
-                                    </div>
-                                </div>
+                    <!-- Login Credentials -->
+                    <div class="border-t pt-4 mt-2">
+                        <h4 class="font-semibold text-gray-800 mb-3">Login Credentials</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Username <span class="text-red-500">*</span></label>
+                                <input type="text" id="username" required class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg" placeholder="e.g., juan.delacruz">
+                                <p class="text-xs text-gray-400 mt-1">Used for login</p>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- SA Specific Fields -->
-                    <div id="saFields" style="display: none;">
-                        <div class="border-t pt-4 mt-2">
-                            <h4 class="font-semibold text-gray-800 mb-3">Student Assistant Compensation</h4>
-                            <div class="grid grid-cols-1 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Hourly Rate</label>
-                                    <div class="relative">
-                                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₱</span>
-                                        <input type="number" id="saHourlyRate" step="0.01" value="100" class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg">
-                                    </div>
-                                </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Password <span class="text-red-500">*</span></label>
+                                <input type="password" id="password" required class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg" placeholder="Minimum 6 characters">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                                <input type="password" id="confirmPassword" required class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg" placeholder="Re-enter password">
                             </div>
                         </div>
                     </div>
@@ -384,22 +447,22 @@
                     <div class="border-t pt-4 mt-2">
                         <h4 class="font-semibold text-gray-800 mb-3">Government Numbers</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
+                        <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">SSS Number</label>
-                                <input type="text" id="sss" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                            </div>
-                            <div>
+                                <input type="text" id="sss" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                        </div>
+                        <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">PhilHealth Number</label>
-                                <input type="text" id="philhealth" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                            </div>
-                            <div>
+                                <input type="text" id="philhealth" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                        </div>
+                        <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Pag-IBIG Number</label>
-                                <input type="text" id="pagibig" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                            </div>
-                            <div>
+                                <input type="text" id="pagibig" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                        </div>
+                        <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">TIN Number</label>
-                                <input type="text" id="tin" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                            </div>
+                                <input type="text" id="tin" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                        </div>
                         </div>
                     </div>
 
@@ -407,31 +470,17 @@
                     <div class="border-t pt-4 mt-2">
                         <h4 class="font-semibold text-gray-800 mb-3">Emergency Contact</h4>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
+                        <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Contact Person</label>
-                                <input type="text" id="emergencyName" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                            </div>
-                            <div>
+                                <input type="text" id="emergencyName" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                        </div>
+                        <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Relationship</label>
-                                <input type="text" id="emergencyRelation" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                            </div>
+                                <input type="text" id="emergencyRelation" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
+                        </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                                <input type="tel" id="emergencyPhone" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Status -->
-                    <div class="border-t pt-4 mt-2">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                <select id="empStatus" class="w-full px-3 py-2 border border-gray-200 rounded-lg">
-                                    <option value="Active">Active</option>
-                                    <option value="Inactive">Inactive</option>
-                                    <option value="On Leave">On Leave</option>
-                                </select>
+                                <input type="tel" id="emergencyPhone" class="form-input w-full px-4 py-2 border border-gray-200 rounded-lg">
                             </div>
                         </div>
                     </div>
@@ -473,6 +522,90 @@
             document.getElementById('typeFilter').addEventListener('change', filterEmployees);
             document.getElementById('statusFilter').addEventListener('change', filterEmployees);
         });
+
+        async function initializeCurrentUserContext() {
+            const navigationUser = await waitForNavigationUser();
+            if (navigationUser) {
+                persistUserContext(navigationUser);
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/auth/session.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (data.authenticated && data.user) {
+                    persistUserContext(data.user);
+                }
+            } catch (error) {
+                console.warn('Could not load current user role:', error);
+            }
+        }
+
+        async function waitForNavigationUser() {
+            for (let attempt = 0; attempt < 20; attempt += 1) {
+                if (window.currentUser?.role) {
+                    return window.currentUser;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+            }
+
+            return null;
+        }
+
+        function persistUserContext(user) {
+            if (!user?.role) return;
+
+            const displayName = user.full_name || user.username || user.role || 'User';
+            window.currentUser = user;
+            window.userRole = user.role;
+            window.userName = displayName;
+
+            try {
+                localStorage.setItem('userRole', user.role);
+                sessionStorage.setItem('userRole', user.role);
+                localStorage.setItem('userName', displayName);
+                sessionStorage.setItem('userName', displayName);
+            } catch (error) {
+                console.warn('User context storage not available:', error);
+            }
+        }
+
+        function getCurrentUserRole() {
+            return window.currentUser?.role || window.userRole || sessionStorage.getItem('userRole') || localStorage.getItem('userRole') || '';
+        }
+
+        function getCurrentUserName() {
+            return window.currentUser?.full_name || window.currentUser?.username || window.userName || sessionStorage.getItem('userName') || localStorage.getItem('userName') || getCurrentUserRole() || 'User';
+        }
+
+        function updateUserNameDisplay() {
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement) {
+                userNameElement.textContent = getCurrentUserName();
+            }
+        }
+
+        function updateNavigationForRole() {
+            const isAccountant = getCurrentUserRole().toLowerCase() === 'accountant';
+            const links = {
+                'dashboardSadmin.html': isAccountant ? 'dashboard.html' : 'dashboardSadmin.html',
+                'employeesSadmin.html': isAccountant ? 'employees.html' : 'employeesSadmin.html',
+                'payrollSadmin.html': isAccountant ? 'payroll.html' : 'payrollSadmin.html',
+                'settingsSadmin.html': isAccountant ? 'settings.html' : 'settingsSadmin.html'
+            };
+
+            Object.entries(links).forEach(([currentHref, nextHref]) => {
+                const link = document.querySelector(`a[href="${currentHref}"]`);
+                if (link) link.href = nextHref;
+            });
+        }
 
         async function loadEmployees() {
             try {
@@ -584,7 +717,10 @@
         }
 
         // Add Employee Modal Functions
-        function openAddEmployeeModal() {
+        async function openAddEmployeeModal() {
+            await initializeCurrentUserContext();
+            updateUserNameDisplay();
+            updateNavigationForRole();
             selectedType = null;
             currentStep = 1;
             document.getElementById('step1Content').style.display = 'block';
@@ -592,6 +728,7 @@
             document.getElementById('step3Content').style.display = 'none';
             updateStepIndicators();
             document.getElementById('addEmployeeModal').style.display = 'flex';
+            toggleAssignmentFields();
         }
 
         function closeAddEmployeeModal() {
@@ -609,42 +746,36 @@
             });
             document.querySelector(`.type-card[data-type="${type}"]`).classList.add('selected');
             
-            // Show relevant fields for step 2
-            document.getElementById('facultyFields').style.display = 'none';
-            document.getElementById('adminFields').style.display = 'none';
-            document.getElementById('guardFields').style.display = 'none';
-            document.getElementById('saFields').style.display = 'none';
-            
-            if (type === 'faculty') {
-                document.getElementById('facultyFields').style.display = 'block';
-                document.getElementById('facultyAssignment').addEventListener('change', toggleFacultySubjects);
-                toggleFacultySubjects();
-            } else if (type === 'admin') {
-                document.getElementById('adminFields').style.display = 'block';
-            } else if (type === 'guard') {
-                document.getElementById('guardFields').style.display = 'block';
-            } else if (type === 'sa') {
-                document.getElementById('saFields').style.display = 'block';
-            }
+            const defaults = {
+                faculty: 'shs_only',
+                admin: 'admin',
+                guard: 'guard',
+                sa: 'sa'
+            };
+
+            document.getElementById('assignmentType').value = defaults[type] || 'shs_only';
+            toggleAssignmentFields();
             
             goToStep(2);
         }
 
-        function toggleFacultySubjects() {
-            const assignment = document.getElementById('facultyAssignment').value;
-            document.getElementById('shsSubjectsDiv').style.display = (assignment === 'shs_only' || assignment === 'both') ? 'block' : 'none';
-            document.getElementById('collegeSubjectsDiv').style.display = (assignment === 'college_only' || assignment === 'both') ? 'block' : 'none';
-        }
+        function toggleAssignmentFields() {
+            const assignment = document.getElementById('assignmentType')?.value || 'shs_only';
+            const hasShs = ['shs_only', 'both', 'admin_shs', 'admin_shs_college'].includes(assignment);
+            const hasCollege = ['college_only', 'both', 'admin_college', 'admin_shs_college'].includes(assignment);
+            const hasAdmin = ['admin', 'admin_college', 'admin_shs', 'admin_shs_college'].includes(assignment);
+            const sections = {
+                shsFields: hasShs,
+                collegeFields: hasCollege,
+                adminFields: hasAdmin,
+                guardFields: assignment === 'guard',
+                saFields: assignment === 'sa'
+            };
 
-        function calculateAdminDailyRate() {
-            const monthlySalary = parseFloat(document.getElementById('baseSalary').value) || 0;
-            const dailyRate = monthlySalary / 22;
-            const hourlyRate = dailyRate / 8;
-            
-            document.getElementById('dailyRateDisplay').value = dailyRate.toFixed(2);
-            document.getElementById('previewMonthly').textContent = '₱' + monthlySalary.toLocaleString();
-            document.getElementById('previewDaily').textContent = '₱' + dailyRate.toFixed(2);
-            document.getElementById('previewHourly').textContent = '₱' + hourlyRate.toFixed(2);
+            Object.entries(sections).forEach(([id, shouldShow]) => {
+                const section = document.getElementById(id);
+                if (section) section.style.display = shouldShow ? 'block' : 'none';
+            });
         }
 
         function goToStep(step) {
@@ -681,14 +812,45 @@
             showLoading(true);
             
             try {
-                let employeeData = {
+                const assignment = document.getElementById('assignmentType').value;
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                if (!username || !password) {
+                    throw new Error('Username and password are required');
+                }
+
+                if (password !== confirmPassword) {
+                    throw new Error('Passwords do not match');
+                }
+
+                if (password.length < 6) {
+                    throw new Error('Password must be at least 6 characters');
+                }
+
+                const employeeData = {
                     full_name: document.getElementById('fullName').value.trim(),
                     email: document.getElementById('email').value.trim(),
                     phone: document.getElementById('phone').value.trim(),
+                    birth_date: document.getElementById('birthDate').value || null,
                     position: document.getElementById('position').value.trim(),
                     department: document.getElementById('department').value,
+                    employment_type: document.getElementById('employmentType').value,
                     hire_date: document.getElementById('hireDate').value || null,
-                    status: document.getElementById('empStatus').value,
+                    status: document.getElementById('status').value,
+                    base_salary: parseFloat(document.getElementById('salary').value) || 0,
+                    hourly_rate: parseFloat(document.getElementById('hourlyRate').value) || 0,
+                    admin_pay_rate: parseFloat(document.getElementById('adminPayRate').value) || 0,
+                    assignment,
+                    rate_shs: parseFloat(document.getElementById('shsRate')?.value) || 0,
+                    rate_college: parseFloat(document.getElementById('collegeRate')?.value) || 0,
+                    rate_admin: parseFloat(document.getElementById('adminRate')?.value) || 0,
+                    rate_guard: parseFloat(document.getElementById('guardRate')?.value) || 0,
+                    rate_sa: parseFloat(document.getElementById('saRate')?.value) || 0,
+                    subjects_shs: document.getElementById('shsSubjects')?.value.split(',').map(s => s.trim()).filter(Boolean) || [],
+                    subjects_college: document.getElementById('collegeSubjects')?.value.split(',').map(s => s.trim()).filter(Boolean) || [],
+                    admin_position: document.getElementById('adminPosition')?.value || '',
                     sss: document.getElementById('sss').value,
                     philhealth: document.getElementById('philhealth').value,
                     pagibig: document.getElementById('pagibig').value,
@@ -697,56 +859,12 @@
                     emergency_relation: document.getElementById('emergencyRelation').value,
                     emergency_phone: document.getElementById('emergencyPhone').value
                 };
-                
-                if (selectedType === 'faculty') {
-                    const assignment = document.getElementById('facultyAssignment').value;
-                    const hourlyRate = parseFloat(document.getElementById('hourlyRate').value) || 80;
-                    
-                    employeeData.assignment = assignment;
-                    employeeData.hourly_rate = hourlyRate;
-                    employeeData.rate_shs = (assignment === 'shs_only' || assignment === 'both') ? hourlyRate : 0;
-                    employeeData.rate_college = (assignment === 'college_only' || assignment === 'both') ? hourlyRate : 0;
-                    employeeData.base_salary = 0;
-                    
-                    if (assignment === 'shs_only' || assignment === 'both') {
-                        employeeData.subjects_shs = document.getElementById('shsSubjects').value.split(',').map(s => s.trim()).filter(Boolean);
+
+                Object.keys(employeeData).forEach(key => {
+                    if (employeeData[key] === '' || employeeData[key] === null) {
+                        delete employeeData[key];
                     }
-                    if (assignment === 'college_only' || assignment === 'both') {
-                        employeeData.subjects_college = document.getElementById('collegeSubjects').value.split(',').map(s => s.trim()).filter(Boolean);
-                    }
-                    
-                } else if (selectedType === 'admin') {
-                    const monthlySalary = parseFloat(document.getElementById('baseSalary').value) || 0;
-                    const dailyRate = monthlySalary / 22;
-                    const hourlyRate = dailyRate / 8;
-                    
-                    employeeData.assignment = 'admin';
-                    employeeData.base_salary = monthlySalary;
-                    employeeData.hourly_rate = hourlyRate;
-                    employeeData.rate_admin = hourlyRate;
-                    employeeData.admin_position = document.getElementById('position').value.trim() || 'Admin Staff';
-                    
-                } else if (selectedType === 'guard') {
-                    const dailyRate = parseFloat(document.getElementById('guardDailyRate').value) || 433;
-                    const monthlySalary = dailyRate * 22;
-                    const hourlyRate = dailyRate / 8;
-                    
-                    employeeData.assignment = 'guard';
-                    employeeData.rate_guard = dailyRate;
-                    employeeData.base_salary = monthlySalary;
-                    employeeData.hourly_rate = hourlyRate;
-                    employeeData.position = 'Security Guard';
-                    
-                } else if (selectedType === 'sa') {
-                    const hourlyRate = parseFloat(document.getElementById('saHourlyRate').value) || 100;
-                    const monthlySalary = hourlyRate * 80;
-                    
-                    employeeData.assignment = 'sa';
-                    employeeData.rate_sa = hourlyRate;
-                    employeeData.base_salary = monthlySalary;
-                    employeeData.hourly_rate = hourlyRate;
-                    employeeData.position = 'Student Assistant';
-                }
+                });
                 
                 console.log("Saving employee:", employeeData);
                 
@@ -768,6 +886,12 @@
                 
                 const result = await response.json();
                 console.log("Employee saved:", result);
+
+                await createUserForEmployee({
+                    ...employeeData,
+                    id: result.id,
+                    username
+                }, password);
                 
                 goToStep(3);
                 loadEmployees();
@@ -779,6 +903,48 @@
                 showLoading(false);
             }
         });
+
+        async function createUserForEmployee(employee, password) {
+            const userData = {
+                username: employee.username,
+                password,
+                full_name: employee.full_name,
+                email: employee.email,
+                role: mapAssignmentToRole(employee.assignment),
+                status: 'Active',
+                linked_employee: employee.id
+            };
+
+            const response = await fetch('/api/users.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(userData)
+            });
+
+            if (!response.ok) {
+                const error = await response.json().catch(() => ({}));
+                throw new Error(error.error || 'Employee saved, but login account creation failed');
+            }
+
+            return response.json();
+        }
+
+        function mapAssignmentToRole(assignment) {
+            switch (assignment) {
+                case 'admin':
+                case 'admin_college':
+                case 'admin_shs':
+                case 'admin_shs_college':
+                    return 'admin';
+                case 'guard':
+                    return 'guard';
+                case 'sa':
+                    return 'sa';
+                default:
+                    return 'teacher';
+            }
+        }
 
         function showLoading(show) {
             document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
