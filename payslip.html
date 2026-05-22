@@ -7,8 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -59,6 +57,8 @@
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s;
+            cursor: pointer;
+            border: none;
         }
         
         .btn-primary:hover {
@@ -73,24 +73,12 @@
             border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s;
+            cursor: pointer;
+            border: none;
         }
         
         .btn-secondary:hover {
             background-color: #4b5563;
-            transform: translateY(-2px);
-        }
-        
-        .btn-success {
-            background-color: #10b981;
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            transition: all 0.3s;
-        }
-        
-        .btn-success:hover {
-            background-color: #059669;
             transform: translateY(-2px);
         }
         
@@ -99,7 +87,7 @@
                 display: none !important;
             }
             body {
-                background: white;
+                background: white !important;
                 padding: 0;
                 margin: 0;
             }
@@ -107,6 +95,23 @@
                 box-shadow: none;
                 max-height: none;
                 overflow: visible;
+                background: white !important;
+                border-radius: 0;
+            }
+            /* Force white background for print */
+            .payslip-container, 
+            .payslip-preview,
+            .payslip-preview * {
+                background: white !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            table {
+                page-break-inside: avoid;
+            }
+            .payslip-container {
+                page-break-after: avoid;
+                page-break-inside: avoid;
             }
         }
         
@@ -127,33 +132,6 @@
             font-size: 0.75rem;
             font-weight: 500;
         }
-
-        @media print {
-    body {
-        background: white;
-        padding: 0;
-        margin: 0;
-    }
-    .no-print {
-        display: none !important;
-    }
-    .payslip-preview {
-        box-shadow: none;
-        max-height: none;
-        overflow: visible;
-    }
-    .payslip-pdf-container {
-        margin: 0;
-        padding: 0;
-    }
-    table {
-        page-break-inside: avoid;
-    }
-    .payslip-container {
-        page-break-after: avoid;
-        page-break-inside: avoid;
-    }
-}
     </style>
 </head>
 <body class="text-gray-700 antialiased min-h-screen">
@@ -207,9 +185,6 @@
                     <button onclick="generatePayslip()" id="generateBtn" class="btn-primary flex items-center gap-2" disabled>
                         <i class="fa-solid fa-file-invoice"></i> Generate Payslip
                     </button>
-                    <button onclick="downloadPDF()" id="downloadBtn" class="btn-success flex items-center gap-2" disabled>
-                        <i class="fa-solid fa-download"></i> PDF
-                    </button>
                     <button onclick="printPayslip()" id="printBtn" class="btn-secondary flex items-center gap-2" disabled>
                         <i class="fa-solid fa-print"></i> Print
                     </button>
@@ -230,7 +205,6 @@
         <div class="spinner"></div>
     </div>
 
-    <script src="js/database.js"></script>
     <script src="js/navigation.js"></script>
     <script src="js/payslip-generator.js"></script>
     <script>
@@ -241,7 +215,6 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-            
             await loadData();
             
             document.getElementById('employeeSelect').addEventListener('change', onEmployeeChange);
@@ -251,9 +224,13 @@
         async function loadData() {
             showLoading(true);
             try {
-                await Database.ensureDatabaseReady();
-                allEmployees = await Database.getAllEmployees();
-                allPayroll = await Database.getAllPayroll();
+                const empResponse = await fetch('/api/employees.php', { credentials: 'include' });
+                if (!empResponse.ok) throw new Error('Failed to load employees');
+                allEmployees = await empResponse.json();
+                
+                const payResponse = await fetch('/api/payroll.php', { credentials: 'include' });
+                if (!payResponse.ok) throw new Error('Failed to load payroll');
+                allPayroll = await payResponse.json();
                 
                 populateEmployeeSelect();
                 console.log("Loaded", allEmployees.length, "employees and", allPayroll.length, "payroll records");
@@ -269,7 +246,6 @@
             const select = document.getElementById('employeeSelect');
             select.innerHTML = '<option value="">-- Select Employee --</option>';
             
-            // Sort employees by name
             const sortedEmployees = [...allEmployees].sort((a, b) => 
                 (a.full_name || '').localeCompare(b.full_name || '')
             );
@@ -293,29 +269,21 @@
                 return;
             }
             
-            // Filter payroll records for selected employee
             const employeePayroll = allPayroll.filter(p => p.employee_id == employeeId);
-            
             periodSelect.innerHTML = '<option value="">-- Select Period --</option>';
             
-            // Get unique periods
             const uniquePeriods = new Map();
             employeePayroll.forEach(p => {
-                const key = `${p.period_start}|${p.period_end}`;
-                if (!uniquePeriods.has(key) && p.period_start && p.period_end) {
-                    uniquePeriods.set(key, {
-                        start: p.period_start,
-                        end: p.period_end,
-                        display: formatPeriodDisplay(p.period_start, p.period_end),
-                        payroll_id: p.id
-                    });
-                } else if (!uniquePeriods.has(key) && p.period) {
-                    uniquePeriods.set(p.period, {
-                        start: null,
-                        end: null,
-                        display: p.period,
-                        payroll_id: p.id
-                    });
+                if (p.period_start && p.period_end) {
+                    const key = `${p.period_start}|${p.period_end}`;
+                    if (!uniquePeriods.has(key)) {
+                        uniquePeriods.set(key, {
+                            start: p.period_start,
+                            end: p.period_end,
+                            display: formatPeriodDisplay(p.period_start, p.period_end),
+                            payroll_id: p.id
+                        });
+                    }
                 }
             });
             
@@ -323,8 +291,6 @@
                 const option = document.createElement('option');
                 option.value = period.payroll_id;
                 option.textContent = period.display;
-                option.dataset.start = period.start || '';
-                option.dataset.end = period.end || '';
                 periodSelect.appendChild(option);
             }
             
@@ -337,8 +303,9 @@
             generateBtn.disabled = !payrollId;
             
             if (!payrollId) {
-                document.getElementById('downloadBtn').disabled = true;
                 document.getElementById('printBtn').disabled = true;
+            } else {
+                document.getElementById('printBtn').disabled = false;
             }
         }
 
@@ -361,7 +328,6 @@
             showLoading(true);
             
             try {
-                // Fetch payslip data from API
                 const response = await fetch(`/api/payslip.php?payroll_id=${payrollId}`, {
                     method: 'GET',
                     credentials: 'include'
@@ -381,10 +347,8 @@
                 currentPayslipData = result.data;
                 currentTemplateType = result.data.type;
                 
-                // Render preview
                 renderPreview();
                 
-                document.getElementById('downloadBtn').disabled = false;
                 document.getElementById('printBtn').disabled = false;
                 
             } catch (error) {
@@ -419,46 +383,6 @@
             }
             
             container.innerHTML = html;
-            
-            // Generate QR code if container exists and data has QR info
-            setTimeout(() => {
-                const qrContainer = document.getElementById('qrCodeContainer');
-                if (qrContainer && currentPayslipData.qr_data) {
-                    try {
-                        new QRCode(qrContainer, {
-                            text: currentPayslipData.qr_data,
-                            width: 80,
-                            height: 80
-                        });
-                    } catch (e) {
-                        console.warn('QR Code generation failed:', e);
-                    }
-                }
-            }, 100);
-        }
-
-        async function downloadPDF() {
-            if (!currentPayslipData) {
-                alert('No payslip generated yet');
-                return;
-            }
-            
-            if (currentPayslipData.status !== 'Approved') {
-                if (!confirm('This payslip is not yet approved. Download anyway?')) {
-                    return;
-                }
-            }
-            
-            showLoading(true);
-            
-            try {
-                await window.payslipGenerator.generatePDF(currentPayslipData, currentTemplateType);
-            } catch (error) {
-                console.error('PDF generation error:', error);
-                alert('Error generating PDF: ' + error.message);
-            } finally {
-                showLoading(false);
-            }
         }
 
         function printPayslip() {
@@ -478,7 +402,8 @@
             window.location.href = 'payroll.html';
         }
 
-        function logout() {
+        async function logout() {
+            await fetch('/api/auth/logout.php', { method: 'POST', credentials: 'include' });
             localStorage.clear();
             window.location.href = 'index.html';
         }
