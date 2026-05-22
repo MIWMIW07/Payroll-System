@@ -7,10 +7,6 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Security Scripts -->
-    <script src="js/csrf.js"></script>
-    <script src="js/xss-protection.js"></script>
-    <script src="js/secure-ajax.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #dcd3b8; }
         .nav-link.active { background-color: #b0303b; color: white; }
@@ -51,26 +47,57 @@
             font-weight: 500;
         }
         
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            display: flex;
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: inline-flex;
             align-items: center;
-            justify-content: center;
-            z-index: 1000;
+            gap: 4px;
         }
-        .modal-content {
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            max-width: 500px;
-            width: 90%;
-            max-height: 80vh;
-            overflow-y: auto;
+        .action-edit {
+            background-color: #b0303b;
+            color: white;
+        }
+        .action-edit:hover {
+            background-color: #8a1f27;
+            transform: translateY(-1px);
+        }
+        .action-view {
+            background-color: #6b7280;
+            color: white;
+        }
+        .action-view:hover {
+            background-color: #4b5563;
+            transform: translateY(-1px);
+        }
+        .action-archive {
+            background-color: #f59e0b;
+            color: white;
+        }
+        .action-archive:hover {
+            background-color: #d97706;
+            transform: translateY(-1px);
+        }
+        .action-restore {
+            background-color: #10b981;
+            color: white;
+        }
+        .action-restore:hover {
+            background-color: #059669;
+            transform: translateY(-1px);
+        }
+        .action-delete {
+            background-color: #ef4444;
+            color: white;
+        }
+        .action-delete:hover {
+            background-color: #dc2626;
+            transform: translateY(-1px);
         }
     </style>
 </head>
@@ -123,6 +150,10 @@
                     <input type="text" id="searchInput" placeholder="Search employees..." 
                         class="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
                 </div>
+                
+                <button onclick="window.location.href='add-employee.html'" class="bg-[#b0303b] text-white px-4 py-2 rounded-lg hover:bg-[#8a1f27] transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-plus"></i> Add Employee
+                </button>
             </div>
         </div>
 
@@ -133,9 +164,6 @@
                 <option value="college_only">College Only</option>
                 <option value="both">Both SHS & College</option>
                 <option value="admin">Admin Staff</option>
-                <option value="admin_college">Admin & College</option>
-                <option value="admin_shs">Admin & SHS</option>
-                <option value="admin_shs_college">Admin, SHS & College</option>
                 <option value="guard">Security Guard</option>
                 <option value="sa">Student Assistant</option>
             </select>
@@ -155,7 +183,7 @@
             <div class="overflow-x-auto">
                 <table class="w-full text-left">
                     <thead class="bg-gray-50 text-xs text-gray-500">
-                        发展
+                        <tr>
                             <th class="py-3 px-6">ID</th>
                             <th class="py-3">Name</th>
                             <th class="py-3">Position</th>
@@ -163,7 +191,7 @@
                             <th class="py-3">Rate</th>
                             <th class="py-3">Assignment</th>
                             <th class="py-3">Status</th>
-                            <th class="py-3 text-right pr-6">Actions</th>
+                            <th class="py-3 text-center">Actions</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm" id="employeeTableBody">
@@ -235,10 +263,9 @@
         </div>
     </div>
 
-<script src="js/api-integration.js"></script>
+    <script src="js/api-integration.js"></script>
     <script src="js/database.js"></script>
     <script src="js/navigation.js"></script>
-    <script src="js/teacher-assignment.js"></script>
     <script>
         let allEmployees = [];
         let filteredEmployees = [];
@@ -248,46 +275,6 @@
         let currentArchiveId = null;
         let currentRestoreId = null;
         let currentDeleteId = null;
-
-        // Direct API calls (like accountant pages)
-        async function loadEmployeesFromAPI() {
-            try {
-                const response = await fetch('/api/employees.php', { credentials: 'include' });
-                if (!response.ok) return [];
-                return await response.json();
-            } catch (error) {
-                console.error("Error loading employees:", error);
-                return [];
-            }
-        }
-
-        async function updateEmployeeAPI(id, data) {
-            try {
-                const response = await fetch('/api/employees.php', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ id, ...data })
-                });
-                return response.ok;
-            } catch (error) {
-                console.error("Error updating employee:", error);
-                return false;
-            }
-        }
-
-        async function deleteEmployeeAPI(id) {
-            try {
-                const response = await fetch(`/api/employees.php?id=${id}`, {
-                    method: 'DELETE',
-                    credentials: 'include'
-                });
-                return response.ok;
-            } catch (error) {
-                console.error("Error deleting employee:", error);
-                return false;
-            }
-        }
 
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -301,10 +288,13 @@
 
         async function loadEmployees() {
             try {
-                allEmployees = await loadEmployeesFromAPI();
+                const response = await fetch('/api/employees.php', { credentials: 'include' });
+                if (!response.ok) throw new Error('Failed to load');
+                allEmployees = await response.json();
                 filterEmployees();
             } catch (error) {
                 console.error('Error loading employees:', error);
+                document.getElementById('employeeTableBody').innerHTML = '<tr><td colspan="8" class="py-8 text-center text-red-500">Error loading employees</td></tr>';
             }
         }
 
@@ -318,9 +308,8 @@
                 if (!showArchived && emp.status === 'Archived') return false;
                 if (showArchived && emp.status !== 'Archived') return false;
                 
-                const matchesSearch = emp.full_name?.toLowerCase().includes(searchTerm) ||
-                                     emp.position?.toLowerCase().includes(searchTerm) ||
-                                     emp.employee_id?.toLowerCase().includes(searchTerm);
+                const matchesSearch = (emp.full_name || '').toLowerCase().includes(searchTerm) ||
+                                     (emp.position || '').toLowerCase().includes(searchTerm);
                 
                 let matchesType = true;
                 if (typeFilter !== 'all') {
@@ -395,27 +384,37 @@
                     let actions = '';
                     if (emp.status === 'Active') {
                         actions = `
-                            <button onclick="editEmployee(${emp.id})" class="text-[#b0303b] hover:text-[#8a1f27] mr-2" title="Edit"><i class="fa-regular fa-pen-to-square"></i></button>
-                            <button onclick="viewEmployee(${emp.id})" class="text-[#b0303b] hover:text-[#8a1f27] mr-2" title="View"><i class="fa-regular fa-eye"></i></button>
-                            <button onclick="openArchiveModal(${emp.id}, '${emp.full_name}')" class="text-gray-400 hover:text-red-600" title="Archive"><i class="fa-regular fa-box-archive"></i></button>
+                            <button onclick="editEmployee(${emp.id})" class="action-btn action-edit mr-1" title="Edit">
+                                <i class="fa-regular fa-pen-to-square"></i> Edit
+                            </button>
+                            <button onclick="viewEmployee(${emp.id})" class="action-btn action-view mr-1" title="View">
+                                <i class="fa-regular fa-eye"></i> View
+                            </button>
+                            <button onclick="openArchiveModal(${emp.id}, '${escapeHtml(emp.full_name)}')" class="action-btn action-archive" title="Archive">
+                                <i class="fa-regular fa-box-archive"></i> Archive
+                            </button>
                         `;
                     } else {
                         actions = `
-                            <button onclick="openRestoreModal(${emp.id}, '${emp.full_name}')" class="text-green-600 hover:text-green-800 mr-2" title="Restore"><i class="fa-regular fa-arrow-rotate-left"></i></button>
-                            <button onclick="openDeleteModal(${emp.id}, '${emp.full_name}')" class="text-red-600 hover:text-red-800" title="Permanently Delete"><i class="fa-regular fa-trash-can"></i></button>
+                            <button onclick="openRestoreModal(${emp.id}, '${escapeHtml(emp.full_name)}')" class="action-btn action-restore mr-1" title="Restore">
+                                <i class="fa-regular fa-arrow-rotate-left"></i> Restore
+                            </button>
+                            <button onclick="openDeleteModal(${emp.id}, '${escapeHtml(emp.full_name)}')" class="action-btn action-delete" title="Delete Permanently">
+                                <i class="fa-regular fa-trash-can"></i> Delete
+                            </button>
                         `;
                     }
                     
                     return `
                         <tr class="border-b hover:bg-gray-50 ${emp.status === 'Archived' ? 'opacity-60' : ''}">
                             <td class="py-3 px-6 font-mono text-xs">#${emp.id}</td>
-                            <td class="py-3 font-medium">${emp.full_name}</td>
-                            <td class="py-3">${emp.position || emp.adminPosition || '—'}</td>
+                            <td class="py-3 font-medium">${escapeHtml(emp.full_name)}</td>
+                            <td class="py-3">${escapeHtml(emp.position || emp.admin_position || '—')}</td>
                             <td class="py-3">${assignmentBadge}</td>
                             <td class="py-3 text-sm">${rateDisplay}</td>
                             <td class="py-3"><span class="px-2 py-1 rounded-full text-xs ${emp.assignment === 'both' ? 'bg-purple-100 text-purple-600' : 'bg-gray-100 text-gray-600'}">${emp.assignment || 'Regular'}</span></td>
                             <td class="py-3"><span class="px-2 py-1 rounded-full text-xs ${emp.status === 'Active' ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600'}">${emp.status || 'Active'}</span></td>
-                            <td class="py-3 pr-6 text-right">${actions}</td>
+                            <td class="py-3 text-center"><div class="flex items-center justify-center gap-1 flex-wrap">${actions}</div></td>
                         </tr>
                     `;
                 }).join('');
@@ -477,21 +476,28 @@
             currentArchiveId = null;
         }
 
-async function confirmArchive() {
+        async function confirmArchive() {
             if (!currentArchiveId) return;
             try {
-                const success = await updateEmployeeAPI(currentArchiveId, {
-                    status: 'Archived',
-                    archived_at: new Date().toISOString(),
-                    archived_reason: document.getElementById('archiveReason').value
+                const response = await fetch(`/api/employee.php?id=${currentArchiveId}`, { credentials: 'include' });
+                const employee = await response.json();
+                
+                employee.status = 'Archived';
+                employee.archived_at = new Date().toISOString();
+                employee.archived_reason = document.getElementById('archiveReason').value;
+                
+                const updateResponse = await fetch('/api/employees.php', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(employee)
                 });
-                if (success) {
-                    alert('Employee archived successfully');
-                    closeArchiveModal();
-                    await loadEmployees();
-                } else {
-                    throw new Error('Failed to archive');
-                }
+                
+                if (!updateResponse.ok) throw new Error('Failed to archive');
+                
+                alert('Employee archived successfully');
+                closeArchiveModal();
+                await loadEmployees();
             } catch (error) {
                 console.error('Error archiving employee:', error);
                 alert('Error archiving employee');
@@ -512,18 +518,25 @@ async function confirmArchive() {
         async function confirmRestore() {
             if (!currentRestoreId) return;
             try {
-                const success = await updateEmployeeAPI(currentRestoreId, {
-                    status: 'Active',
-                    archived_at: null,
-                    archived_reason: null
+                const response = await fetch(`/api/employee.php?id=${currentRestoreId}`, { credentials: 'include' });
+                const employee = await response.json();
+                
+                employee.status = 'Active';
+                delete employee.archived_at;
+                delete employee.archived_reason;
+                
+                const updateResponse = await fetch('/api/employees.php', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'include',
+                    body: JSON.stringify(employee)
                 });
-                if (success) {
-                    alert('Employee restored successfully');
-                    closeRestoreModal();
-                    await loadEmployees();
-                } else {
-                    throw new Error('Failed to restore');
-                }
+                
+                if (!updateResponse.ok) throw new Error('Failed to restore');
+                
+                alert('Employee restored successfully');
+                closeRestoreModal();
+                await loadEmployees();
             } catch (error) {
                 console.error('Error restoring employee:', error);
                 alert('Error restoring employee');
@@ -543,15 +556,17 @@ async function confirmArchive() {
 
         async function confirmPermanentDelete() {
             if (!currentDeleteId) return;
+            if (!confirm('WARNING: This will permanently delete all data for this employee. This cannot be undone. Continue?')) return;
             try {
-                const success = await deleteEmployeeAPI(currentDeleteId);
-                if (success) {
-                    alert('Employee permanently deleted');
-                    closeDeleteModal();
-                    await loadEmployees();
-                } else {
-                    throw new Error('Failed to delete');
-                }
+                const response = await fetch(`/api/employees.php?id=${currentDeleteId}`, {
+                    method: 'DELETE',
+                    credentials: 'include'
+                });
+                if (!response.ok) throw new Error('Failed to delete');
+                
+                alert('Employee permanently deleted');
+                closeDeleteModal();
+                await loadEmployees();
             } catch (error) {
                 console.error('Error deleting employee:', error);
                 alert('Error deleting employee');
@@ -562,12 +577,32 @@ async function confirmArchive() {
             document.getElementById('searchInput').value = '';
             document.getElementById('typeFilter').value = 'all';
             document.getElementById('statusFilter').value = 'all';
+            if (showArchived) toggleArchiveView();
             filterEmployees();
         }
 
-        function editEmployee(id) { window.location.href = `edit-employeeSadmin.html?id=${id}`; }
-        function viewEmployee(id) { window.location.href = `view-employeeSadmin.html?id=${id}`; }
-        function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+        function editEmployee(id) { 
+            window.location.href = `edit-employeeSadmin.html?id=${id}`; 
+        }
+        
+        function viewEmployee(id) { 
+            window.location.href = `view-employeeSadmin.html?id=${id}`; 
+        }
+        
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+        
+        function logout() { 
+            localStorage.clear(); 
+            window.location.href = 'index.html'; 
+        }
     </script>
 </body>
 </html>
