@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philtech GMA | OIC Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Security Scripts -->
+    <script src="js/csrf.js"></script>
+    <script src="js/xss-protection.js"></script>
+    <script src="js/secure-ajax.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #dcd3b8; }
+        .nav-link.active { background-color: #b0303b; color: white; }
+        .loading-tab {
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+            padding: 12px 20px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .loading-tab.active {
+            border-bottom-color: #b0303b;
+            color: #b0303b;
+            font-weight: 600;
+            background: rgba(176, 48, 59, 0.05);
+        }
+        .grid-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background: white;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+        .teacher-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px;
+        }
+        .teacher-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            padding: 12px 8px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .teacher-table td {
+            padding: 10px 8px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+        .teacher-table td:first-child {
+            position: sticky;
+            left: 0;
+            background: white;
+            font-weight: 500;
+            text-align: left;
+            min-width: 180px;
+        }
+        .teacher-table input {
+            width: 100%;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            padding: 6px;
+            outline: none;
+        }
+        .teacher-table input:focus {
+            border-color: #b0303b;
+            outline: 2px solid rgba(176, 48, 59, 0.2);
+        }
+        .teacher-table input:disabled {
+            background-color: #f3f4f6;
+            color: #6b7280;
+        }
+        .total-cell {
+            background-color: #fef3c7;
+            font-weight: 600;
+            color: #b0303b;
+        }
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.55);
+            z-index: 900;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+        .modal-backdrop.show {
+            display: flex;
+        }
+        .schedule-day-tabs {
+            display: grid;
+            grid-template-columns: repeat(7, minmax(96px, 1fr));
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .schedule-day-tab {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #ffffff;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .schedule-day-tab.active {
+            border-color: #8a1f27;
+            background: #fff1f2;
+            color: #8a1f27;
+        }
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+        .schedule-day-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #ffffff;
+            overflow: hidden;
+        }
+        .schedule-day-card.hidden {
+            display: none;
+        }
+        .schedule-day-header {
+            background: #f9fafb;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 10px;
+            font-weight: 600;
+            color: #374151;
+        }
+        .schedule-day-body {
+            padding: 10px;
+        }
+        .schedule-frame-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 32px;
+            gap: 8px;
+            align-items: end;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 8px;
+        }
+        .schedule-frame-row input[data-frame-field="subject"],
+        .schedule-frame-row input[data-frame-field="room"] {
+            grid-column: 1 / -1;
+        }
+        .save-toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            gap: 8px;
+        }
+        .save-toast.show {
+            display: flex;
+            animation: fadeInOut 2s ease;
+        }
+        .settings-card {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .settings-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .settings-header i {
+            font-size: 2rem;
+            color: #b0303b;
+            background: rgba(176, 48, 59, 0.1);
+            padding: 1rem;
+            border-radius: 50%;
+        }
+        .settings-header h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        .settings-header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .info-label {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+        .info-value {
+            font-weight: 500;
+            color: #1f2937;
+            text-align: right;
+        }
+        .logout-button {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            justify-content: center;
+            margin-top: 1.5rem;
+        }
+        .logout-button:hover {
+            background-color: #fecaca;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(220, 38, 38, 0.2);
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translateY(20px); }
+            15% { opacity: 1; transform: translateY(0); }
+            85% { opacity: 1; transform: translateY(0); }
+            100% { opacity: 0; transform: translateY(-20px); }
+        }
+        @media (min-width: 768px) {
+            .period-controls {
+                grid-template-columns: minmax(220px, 1fr) 150px 150px auto;
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-700 antialiased min-h-screen">
+
+    <nav class="bg-[#8a1f27] text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-[#b0303b] rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-chalkboard-user text-[#f4e8c1]"></i>
+            </div>
+            <span class="font-bold text-lg">Philtech GMA - OIC</span>
+        </div>
+
+        <div class="hidden md:flex items-center gap-1">
+            <button type="button" id="loadingNav" class="nav-link active px-4 py-2 rounded-lg bg-[#b0303b] text-white font-medium">Teacher Loading</button>
+            <button type="button" id="settingsNav" class="nav-link px-4 py-2 rounded-lg text-white font-medium hover:bg-[#b0303b]">Settings</button>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <span class="text-sm hidden sm:block" id="userName">OIC Head</span>
+            <div class="relative group">
+                <img src="https://i.pravatar.cc/150?u=oic" id="profileImage" class="w-8 h-8 rounded-full border-2 border-white cursor-pointer">
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 hidden group-hover:block z-50">
+                    <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="p-6 md:p-8 max-w-7xl mx-auto">
+        <section id="loadingSection">
+
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-2xl font-bold text-[#8a1f27]">Teacher Loading</h1>
+                <p class="text-gray-500 text-sm mt-1">Assign subjects and daily hours for teachers (rates are set by Accountant)</p>
+            </div>
+
+            <div class="hidden items-center gap-3">
+                <select id="semesterSelect" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                    <option value="1st Sem">1st Semester</option>
+                    <option value="2nd Sem">2nd Semester</option>
+                    <option value="Summer">Summer</option>
+                </select>
+
+                <select id="schoolYearSelect" class="border border-gray-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                    <option value="2024-2025">2024-2025</option>
+                    <option value="2025-2026" selected>2025-2026</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-t-xl shadow-sm border border-gray-200 overflow-x-auto mb-6">
+            <div class="flex whitespace-nowrap" id="loadingTabs">
+                <div class="loading-tab active" data-level="shs">📚 SHS Faculty Loading</div>
+                <div class="loading-tab" data-level="college">🎓 College Faculty Loading</div>
+                <div class="loading-tab" data-level="teachers-schedule">Teachers Schedule</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="font-semibold text-gray-800" id="currentLevelTitle">SHS Faculty Loading</h2>
+                <span class="text-sm text-gray-500">Click any cell to edit - saves automatically</span>
+            </div>
+            <div id="periodControls" class="period-controls mb-4 grid gap-3 items-end bg-gray-50 rounded-lg p-4">
+                <label class="text-sm font-medium text-gray-700">
+                    Period
+                    <select id="periodSelect" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                        <option value="">Custom period</option>
+                    </select>
+                </label>
+                <label class="text-sm font-medium text-gray-700">
+                    Start
+                    <input id="periodStartInput" type="date" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                </label>
+                <label class="text-sm font-medium text-gray-700">
+                    End
+                    <input id="periodEndInput" type="date" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                </label>
+                <div class="text-sm text-gray-500" id="selectedPeriodInfo">No period selected</div>
+            </div>
+            <div id="scheduleFilters" class="hidden mb-4 grid gap-3 md:grid-cols-[minmax(220px,1fr)_220px] items-end bg-gray-50 rounded-lg p-4">
+                <label class="text-sm font-medium text-gray-700">
+                    Search Teacher
+                    <input id="teacherSearchInput" type="search" placeholder="Search by teacher name" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                </label>
+                <label class="text-sm font-medium text-gray-700">
+                    Assignment
+                    <select id="teacherAssignmentFilter" class="mt-1 w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                        <option value="all">All teachers</option>
+                        <option value="shs_only">SHS only</option>
+                        <option value="college_only">College only</option>
+                        <option value="both">Both SHS and College</option>
+                    </select>
+                </label>
+            </div>
+
+            <div id="loadingContainer" class="grid-container">
+                <div id="loadingMessage" class="text-center py-8 text-gray-400">Loading teachers...</div>
+                <table class="teacher-table hidden" id="teacherTable">
+                    <thead id="tableHeader"></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+        </div>
+        </section>
+
+        <section id="settingsSection" class="hidden">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-[#8a1f27]">Settings</h1>
+                    <p class="text-gray-500 text-sm mt-1" id="oicSettingsDate"></p>
+                </div>
+            </div>
+
+            <div class="settings-card">
+                <div class="settings-header">
+                    <i class="fa-regular fa-user-circle"></i>
+                    <div>
+                        <h2>Account Information</h2>
+                        <p>View your OIC profile and manage your account</p>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="info-item">
+                        <span class="info-label"><i class="fa-regular fa-user mr-2 text-gray-400"></i>Full Name</span>
+                        <span class="info-value" id="displayFullName">Loading...</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fa-regular fa-id-card mr-2 text-gray-400"></i>Username</span>
+                        <span class="info-value" id="displayUsername">oic</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fa-regular fa-building mr-2 text-gray-400"></i>Role</span>
+                        <span class="info-value" id="displayRole">Officer in Charge</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fa-regular fa-calendar mr-2 text-gray-400"></i>Last Login</span>
+                        <span class="info-value" id="lastLogin">Just now</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label"><i class="fa-solid fa-globe mr-2 text-gray-400"></i>System Version</span>
+                        <span class="info-value">v2.0.0 (Excel Mode)</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
+                    <button type="button" onclick="changePassword()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-key"></i>
+                        Change Password
+                    </button>
+                    <button type="button" onclick="viewActivity()" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-lg transition-colors flex items-center justify-center gap-2">
+                        <i class="fa-regular fa-clock"></i>
+                        Activity Log
+                    </button>
+                </div>
+
+                <button type="button" onclick="logout()" class="logout-button">
+                    <i class="fa-solid fa-sign-out-alt"></i>
+                    Sign Out
+                </button>
+
+                <div class="mt-6 text-center text-xs text-gray-400">
+                    <p>&copy; 2026 Philtech GMA. All rights reserved.</p>
+                    <p class="mt-1">Excel-style Attendance System v2.0</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div id="passwordModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-2xl max-w-md w-full mx-4">
+            <div class="p-6 border-b border-gray-100">
+                <h3 class="text-xl font-bold text-[#8a1f27]">Change Password</h3>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                        <input type="password" id="currentPassword" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                        <input type="password" id="newPassword" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                        <p class="text-xs text-gray-400 mt-1">Minimum 6 characters</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent">
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-100 flex justify-end gap-3">
+                <button type="button" onclick="closePasswordModal()" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                <button type="button" onclick="updatePassword()" class="px-4 py-2 bg-[#b0303b] text-white rounded-lg hover:bg-[#8a1f27] transition-colors">Update Password</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="activityModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded-2xl max-w-2xl w-full mx-4 max-h-[80vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white">
+                <h3 class="text-xl font-bold text-[#8a1f27]">Login Activity</h3>
+                <button type="button" onclick="closeActivityModal()" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-2xl"></i>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4" id="activityLog">
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-800">Successful login</p>
+                            <p class="text-xs text-gray-500">Today at 8:30 AM - Chrome on Windows</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center text-green-600">
+                            <i class="fa-solid fa-circle-check"></i>
+                        </div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-800">Successful login</p>
+                            <p class="text-xs text-gray-500">Previous session - Chrome on Windows</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6 border-t border-gray-100">
+                <button type="button" onclick="closeActivityModal()" class="w-full bg-gray-100 py-2 rounded-lg hover:bg-gray-200 transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="scheduleModal" class="modal-backdrop">
+        <div class="bg-white rounded-xl shadow-xl border border-gray-200 w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col">
+            <div class="flex items-start justify-between gap-4 p-5 border-b border-gray-200">
+                <div>
+                    <h3 id="scheduleModalTitle" class="text-lg font-semibold text-gray-800">Edit Schedule</h3>
+                    <p id="scheduleModalSubtitle" class="text-sm text-gray-500 mt-1"></p>
+                </div>
+                <button type="button" id="closeScheduleModalBtn" class="text-gray-500 hover:text-gray-800 text-2xl leading-none">&times;</button>
+            </div>
+            <div class="p-5 overflow-x-auto overflow-y-auto">
+                <div id="scheduleDayTabs" class="schedule-day-tabs"></div>
+                <div id="scheduleFrameGrid" class="schedule-grid"></div>
+            </div>
+            <div class="flex justify-end gap-3 p-5 border-t border-gray-200 bg-gray-50">
+                <button type="button" id="cancelScheduleBtn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100">Cancel</button>
+                <button type="button" id="saveScheduleBtn" class="px-4 py-2 text-sm font-medium text-white bg-[#8a1f27] rounded-lg hover:bg-[#b0303b]">Save Schedule</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="saveToast" class="save-toast">
+        <i class="fa-regular fa-circle-check"></i>
+        <span>Saved successfully</span>
+    </div>
+
+    <script src="js/navigation.js"></script>
+    <script src="js/period-manager.js"></script>
+    <script type="module">
+        console.log("=== OIC DASHBOARD LOADED ===");
+
+        await import('./js/database.js');
+        const Database = window.Database;
+
+        let currentLevel = 'shs';
+        let currentSemester = '1st Sem';
+        let currentSchoolYear = '2025-2026';
+        let allEmployees = [];
+        let allLoads = [];
+        let saveTimeout = null;
+        let periodManager = null;
+        let currentPeriodStart = '';
+        let currentPeriodEnd = '';
+        let teacherSearch = '';
+        let teacherAssignmentFilter = 'all';
+        let currentScheduleContext = null;
+        let selectedScheduleDay = 'mon';
+        const scheduleDays = [
+            { key: 'mon', label: 'Monday' },
+            { key: 'tue', label: 'Tuesday' },
+            { key: 'wed', label: 'Wednesday' },
+            { key: 'thu', label: 'Thursday' },
+            { key: 'fri', label: 'Friday' },
+            { key: 'sat', label: 'Saturday' },
+            { key: 'sun', label: 'Sunday' }
+        ];
+
+        const user = JSON.parse(localStorage.getItem('user') || '{}');
+
+        function getOicDisplayName() {
+            return user.full_name || user.name || window.currentUser?.full_name || 'OIC Head';
+        }
+
+        function loadOicUserInfo() {
+            const displayName = getOicDisplayName();
+            document.getElementById('userName').textContent = displayName;
+            document.getElementById('displayFullName').textContent = displayName;
+            document.getElementById('displayUsername').textContent = user.username || window.currentUser?.username || 'oic';
+            document.getElementById('displayRole').textContent = 'Officer in Charge';
+            document.getElementById('oicSettingsDate').textContent = new Date().toLocaleDateString('en-US', {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            const lastLogin = localStorage.getItem('lastLogin');
+            if (lastLogin) {
+                document.getElementById('lastLogin').textContent = new Date(lastLogin).toLocaleString();
+            } else {
+                const now = new Date().toLocaleString();
+                document.getElementById('lastLogin').textContent = now;
+                localStorage.setItem('lastLogin', now);
+            }
+        }
+
+        function showDashboardSection(section) {
+            const isSettings = section === 'settings';
+            document.getElementById('loadingSection').classList.toggle('hidden', isSettings);
+            document.getElementById('settingsSection').classList.toggle('hidden', !isSettings);
+            document.getElementById('loadingNav').classList.toggle('active', !isSettings);
+            document.getElementById('settingsNav').classList.toggle('active', isSettings);
+            document.getElementById('loadingNav').classList.toggle('bg-[#b0303b]', !isSettings);
+            document.getElementById('settingsNav').classList.toggle('bg-[#b0303b]', isSettings);
+            window.location.hash = isSettings ? 'settings' : 'loading';
+        }
+        window.showOicDashboardSection = showDashboardSection;
+
+        document.getElementById('loadingNav').addEventListener('click', () => showDashboardSection('loading'));
+        document.getElementById('settingsNav').addEventListener('click', () => showDashboardSection('settings'));
+
+        document.getElementById('semesterSelect').addEventListener('change', (e) => {
+            currentSemester = e.target.value;
+            loadData();
+        });
+
+        document.getElementById('schoolYearSelect').addEventListener('change', (e) => {
+            currentSchoolYear = e.target.value;
+            loadData();
+        });
+
+        document.getElementById('periodSelect').addEventListener('change', (e) => {
+            const selected = periodManager?.periods?.find(p => String(p.id) === e.target.value);
+            if (selected) {
+                currentPeriodStart = selected.period_start || selected.startDate;
+                currentPeriodEnd = selected.period_end || selected.endDate;
+                document.getElementById('periodStartInput').value = currentPeriodStart;
+                document.getElementById('periodEndInput').value = currentPeriodEnd;
+            }
+            updateSelectedPeriodInfo();
+            loadData();
+        });
+
+        document.getElementById('periodStartInput').addEventListener('change', (e) => {
+            currentPeriodStart = e.target.value;
+            document.getElementById('periodSelect').value = '';
+            updateSelectedPeriodInfo();
+            loadData();
+        });
+
+        document.getElementById('periodEndInput').addEventListener('change', (e) => {
+            currentPeriodEnd = e.target.value;
+            document.getElementById('periodSelect').value = '';
+            updateSelectedPeriodInfo();
+            loadData();
+        });
+
+        document.getElementById('teacherSearchInput').addEventListener('input', (e) => {
+            teacherSearch = e.target.value.toLowerCase().trim();
+            if (renderTable()) {
+                document.getElementById('loadingMessage').classList.add('hidden');
+                document.getElementById('teacherTable').classList.remove('hidden');
+            }
+        });
+
+        document.getElementById('teacherAssignmentFilter').addEventListener('change', (e) => {
+            teacherAssignmentFilter = e.target.value;
+            loadData();
+        });
+
+        document.getElementById('tableBody').addEventListener('click', (e) => {
+            const button = e.target.closest('[data-action="edit-schedule"]');
+            if (!button) return;
+            openScheduleModal(Number(button.dataset.employeeId), button.dataset.level);
+        });
+
+        document.getElementById('scheduleFrameGrid').addEventListener('click', (e) => {
+            const addButton = e.target.closest('[data-action="add-frame"]');
+            const removeButton = e.target.closest('[data-action="remove-frame"]');
+
+            if (addButton) {
+                addScheduleFrame(addButton.dataset.day);
+            }
+
+            if (removeButton) {
+                removeButton.closest('.schedule-frame-row')?.remove();
+                updateModalDayTotal(removeButton.dataset.day);
+            }
+        });
+
+        document.getElementById('scheduleFrameGrid').addEventListener('input', (e) => {
+            const input = e.target.closest('input[type="time"]');
+            if (!input) return;
+            updateModalDayTotal(input.dataset.day);
+        });
+
+        document.getElementById('scheduleDayTabs').addEventListener('click', (e) => {
+            const tab = e.target.closest('[data-action="select-day"]');
+            if (!tab) return;
+            selectScheduleDay(tab.dataset.day);
+        });
+
+        document.getElementById('closeScheduleModalBtn').addEventListener('click', closeScheduleModal);
+        document.getElementById('cancelScheduleBtn').addEventListener('click', closeScheduleModal);
+        document.getElementById('scheduleModal').addEventListener('click', (e) => {
+            if (e.target.id === 'scheduleModal') closeScheduleModal();
+        });
+        document.getElementById('saveScheduleBtn').addEventListener('click', saveScheduleFromModal);
+
+        document.querySelectorAll('.loading-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.loading-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                currentLevel = tab.dataset.level;
+                document.getElementById('currentLevelTitle').textContent = getCurrentTitle();
+                updateScheduleFiltersVisibility();
+                loadData();
+            });
+        });
+
+        function showSaveToast() {
+            const toast = document.getElementById('saveToast');
+            toast.classList.add('show');
+            if (saveTimeout) clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        function isPeriodMode() {
+            return currentLevel === 'teachers-schedule';
+        }
+
+        function updateScheduleFiltersVisibility() {
+            document.getElementById('scheduleFilters').classList.toggle('hidden', !isPeriodMode());
+        }
+
+        function getCurrentTitle() {
+            if (currentLevel === 'shs') return 'SHS Faculty Loading';
+            if (currentLevel === 'college') return 'College Faculty Loading';
+            return 'Teachers Schedule';
+        }
+
+        function activeLoadingLevel() {
+            return currentLevel;
+        }
+
+        function getRateForTeacher(teacher, level = activeLoadingLevel()) {
+            return level === 'shs'
+                ? Number(teacher.rate_shs || 80)
+                : Number(teacher.rate_college || 85);
+        }
+
+        function updateSelectedPeriodInfo() {
+            const info = document.getElementById('selectedPeriodInfo');
+            info.textContent = currentPeriodStart && currentPeriodEnd
+                ? `${currentPeriodStart} to ${currentPeriodEnd}`
+                : 'No period selected';
+        }
+
+        async function initPeriodControls() {
+            if (!window.PeriodManager) return;
+
+            periodManager = new PeriodManager();
+            await periodManager.loadPeriods();
+
+            const periodSelect = document.getElementById('periodSelect');
+            const options = ['<option value="">Custom period</option>'];
+            for (const period of periodManager.periods || []) {
+                const start = period.period_start || period.startDate;
+                const end = period.period_end || period.endDate;
+                options.push(`<option value="${period.id}">${start} to ${end}</option>`);
+            }
+            periodSelect.innerHTML = options.join('');
+
+            const activePeriod = await periodManager.getActivePeriod();
+            if (activePeriod) {
+                currentPeriodStart = activePeriod.period_start || activePeriod.start;
+                currentPeriodEnd = activePeriod.period_end || activePeriod.end;
+                document.getElementById('periodStartInput').value = currentPeriodStart;
+                document.getElementById('periodEndInput').value = currentPeriodEnd;
+                const matching = (periodManager.periods || []).find(p =>
+                    (p.period_start || p.startDate) === currentPeriodStart &&
+                    (p.period_end || p.endDate) === currentPeriodEnd
+                );
+                if (matching) periodSelect.value = String(matching.id);
+            }
+            updateSelectedPeriodInfo();
+        }
+
+        function normalizeApiRecords(response) {
+            if (Array.isArray(response)) return response;
+            if (Array.isArray(response?.data)) return response.data;
+            if (Array.isArray(response?.records)) return response.records;
+            return [];
+        }
+
+        async function fetchEmployees() {
+            const response = await fetch('/api/employees.php', {
+                credentials: 'include'
+            });
+            if (!response.ok) throw new Error(`Failed to load employees: ${response.status}`);
+            return normalizeApiRecords(await response.json());
+        }
+
+        async function fetchPeriodLoads() {
+            if (!currentPeriodStart || !currentPeriodEnd) return [];
+
+            if (isPeriodMode()) {
+                const [shsLoads, collegeLoads] = await Promise.all([
+                    fetchTeacherSchedulesByLevel('shs'),
+                    fetchTeacherSchedulesByLevel('college')
+                ]);
+                return [...shsLoads, ...collegeLoads];
+            }
+
+            return fetchLoadsByLevel(activeLoadingLevel());
+        }
+
+        async function fetchTeacherSchedulesByLevel(level) {
+            const response = await fetch(`/api/teacher-sched.php?level=${level}&period_start=${currentPeriodStart}&period_end=${currentPeriodEnd}`, {
+                credentials: 'include'
+            });
+            if (!response.ok) throw new Error(`Failed to load ${level} teacher schedules`);
+            return normalizeApiRecords(await response.json()).map(row => ({
+                ...row,
+                employee_id: Number(row.employee_id),
+                schedule_data: normalizeScheduleFrames(row.schedule_data || {}),
+                load_level: level
+            }));
+        }
+
+        async function fetchLoadsByLevel(level) {
+            const type = level === 'shs' ? 'shs-loading' : 'college-loading';
+            const response = await fetch(`/api/attendance.php?type=${type}&period_start=${currentPeriodStart}&period_end=${currentPeriodEnd}`, {
+                credentials: 'include'
+            });
+            if (!response.ok) throw new Error(`Failed to load ${type}`);
+            return normalizeApiRecords(await response.json()).map(row => ({
+                ...row,
+                employee_id: Number(row.employee_id),
+                load_level: level
+            }));
+        }
+
+        async function savePeriodLoad(load, level = activeLoadingLevel()) {
+            const type = level === 'shs' ? 'shs-loading' : 'college-loading';
+            const response = await fetch(`/api/attendance.php?type=${type}`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(load)
+            });
+            if (!response.ok) throw new Error(`Failed to save ${type}`);
+            return response.json();
+        }
+
+        async function saveTeacherSchedule(load, level) {
+            const response = await fetch(`/api/teacher-sched.php?level=${level}`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...load, level })
+            });
+            if (!response.ok) throw new Error(`Failed to save ${level} teacher schedule`);
+            return response.json();
+        }
+
+        async function loadData() {
+            try {
+                document.getElementById('loadingMessage').classList.remove('hidden');
+                document.getElementById('teacherTable').classList.add('hidden');
+
+                allEmployees = await fetchEmployees();
+                allLoads = await fetchPeriodLoads();
+
+                console.log("Loaded employees:", allEmployees.length);
+                console.log("Loaded teacher loads:", allLoads.length);
+
+                if (renderTable()) {
+                    document.getElementById('loadingMessage').classList.add('hidden');
+                    document.getElementById('teacherTable').classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('loadingMessage').innerHTML = 'Error loading teachers. Please refresh.';
+                document.getElementById('loadingMessage').classList.remove('hidden');
+            }
+        }
+
+        function renderTable() {
+            if (!currentPeriodStart || !currentPeriodEnd) {
+                document.getElementById('loadingMessage').innerHTML = isPeriodMode()
+                    ? 'Select a payroll period to view teacher schedules.'
+                    : 'Select a payroll period to edit loadings.';
+                document.getElementById('loadingMessage').classList.remove('hidden');
+                document.getElementById('teacherTable').classList.add('hidden');
+                return false;
+            }
+
+            const teachers = getFilteredTeachers();
+
+            if (teachers.length === 0) {
+                document.getElementById('loadingMessage').innerHTML = isPeriodMode()
+                    ? 'No teachers match the current search and filter.'
+                    : 'No teachers found. Accountant needs to add teachers first.';
+                document.getElementById('loadingMessage').classList.remove('hidden');
+                document.getElementById('teacherTable').classList.add('hidden');
+                return false;
+            }
+
+            const headers = isPeriodMode()
+                ? ['Teacher Name', 'Assignment', 'Level', 'Subject', 'Total Hours', 'Action']
+                : ['Teacher Name', 'Subject', 'Rate/hr', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Total Hours', 'Total Pay'];
+            const headerHtml = `<tr><th>${headers.join('</th><th>')}</th></tr>`;
+            document.getElementById('tableHeader').innerHTML = headerHtml;
+
+            let bodyHtml = '';
+
+            for (const rowData of getScheduleRows(teachers)) {
+                const { teacher, level } = rowData;
+                const loading = allLoads.find(l =>
+                    Number(l.employee_id) === Number(teacher.id) &&
+                    l.load_level === level &&
+                    (
+                        l.period_start === currentPeriodStart && l.period_end === currentPeriodEnd
+                    )
+                ) || {
+                    employee_id: teacher.id,
+                    load_level: level,
+                    semester: currentSemester,
+                    school_year: currentSchoolYear,
+                    period_start: currentPeriodStart,
+                    period_end: currentPeriodEnd,
+                    subject: 0,
+                    mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0
+                };
+
+                const rate = getRateForTeacher(teacher, level);
+
+                const totalHours = (loading.mon || 0) + (loading.tue || 0) + (loading.wed || 0) +
+                                  (loading.thu || 0) + (loading.fri || 0) + (loading.sat || 0) + (loading.sun || 0);
+                const totalPay = totalHours * rate;
+
+                const scheduleCells = isPeriodMode()
+                    ? `<td>${assignmentLabel(teacher.assignment)}</td><td>${levelLabel(level)}</td>`
+                    : '';
+
+                if (isPeriodMode()) {
+                    bodyHtml += `<tr data-id="${teacher.id}" data-level="${level}">
+                        <td style="text-align:left; font-weight:500;">${escapeHtml(teacher.full_name)}</td>
+                        ${scheduleCells}
+                        <td>${toNumberOrZero(loading.subject)}</td>
+                        <td class="total-cell total-hours-cell">${totalHours.toFixed(1)}</td>
+                        <td>
+                            <button type="button" data-action="edit-schedule" data-employee-id="${teacher.id}" data-level="${level}" class="px-3 py-1.5 text-sm font-medium text-white bg-[#8a1f27] rounded-lg hover:bg-[#b0303b]">
+                                Edit
+                            </button>
+                        </td>
+                    </tr>`;
+                    continue;
+                }
+
+                bodyHtml += `<tr data-id="${teacher.id}" data-level="${level}">
+                    <td style="text-align:left; font-weight:500;">${escapeHtml(teacher.full_name)}</td>
+                    <td><input type="number" min="0" step="1" value="${toNumberOrZero(loading.subject)}" data-field="subject" class="w-24"></td>
+                    <td><input type="text" value="₱${rate}/hr" disabled class="bg-gray-100 w-24"></td>
+                    <td><input type="number" step="0.5" value="${loading.mon || 0}" data-field="mon" class="w-16"></td>
+                    <td><input type="number" step="0.5" value="${loading.tue || 0}" data-field="tue" class="w-16"></td>
+                    <td><input type="number" step="0.5" value="${loading.wed || 0}" data-field="wed" class="w-16"></td>
+                    <td><input type="number" step="0.5" value="${loading.thu || 0}" data-field="thu" class="w-16"></td>
+                    <td><input type="number" step="0.5" value="${loading.fri || 0}" data-field="fri" class="w-16"></td>
+                    <td><input type="number" step="0.5" value="${loading.sat || 0}" data-field="sat" class="w-16"></td>
+                    <td><input type="number" step="0.5" value="${loading.sun || 0}" data-field="sun" class="w-16"></td>
+                    <td class="total-cell total-hours-cell">${totalHours.toFixed(1)}</td>
+                    <td class="total-cell total-pay-cell">₱${totalPay.toFixed(2)}</td>
+                </tr>`;
+            }
+
+            document.getElementById('tableBody').innerHTML = bodyHtml;
+
+            attachInputListeners();
+            return true;
+        }
+
+        function getFilteredTeachers() {
+            return allEmployees.filter(emp => {
+                if (emp.status !== 'Active') return false;
+
+                if (isPeriodMode()) {
+                    const matchesAssignment = teacherAssignmentFilter === 'all' || emp.assignment === teacherAssignmentFilter;
+                    const matchesSearch = !teacherSearch || String(emp.full_name || '').toLowerCase().includes(teacherSearch);
+                    return matchesAssignment && matchesSearch;
+                }
+
+                if (activeLoadingLevel() === 'shs') {
+                    return emp.assignment === 'shs_only' || emp.assignment === 'both';
+                }
+
+                return emp.assignment === 'college_only' || emp.assignment === 'both';
+            });
+        }
+
+        function getScheduleRows(teachers) {
+            if (!isPeriodMode()) {
+                return teachers.map(teacher => ({ teacher, level: activeLoadingLevel() }));
+            }
+
+            return teachers.flatMap(teacher => {
+                if (teacher.assignment === 'shs_only') return [{ teacher, level: 'shs' }];
+                if (teacher.assignment === 'college_only') return [{ teacher, level: 'college' }];
+                if (teacher.assignment === 'both') {
+                    return [
+                        { teacher, level: 'shs' },
+                        { teacher, level: 'college' }
+                    ];
+                }
+                return [];
+            });
+        }
+
+        function assignmentLabel(assignment) {
+            if (assignment === 'shs_only') return 'SHS only';
+            if (assignment === 'college_only') return 'College only';
+            if (assignment === 'both') return 'Both SHS and College';
+            return 'Unassigned';
+        }
+
+        function levelLabel(level) {
+            return level === 'shs' ? 'SHS' : 'College';
+        }
+
+        function findLoading(employeeId, level) {
+            return allLoads.find(l =>
+                Number(l.employee_id) === Number(employeeId) &&
+                l.load_level === level &&
+                l.period_start === currentPeriodStart &&
+                l.period_end === currentPeriodEnd
+            ) || {
+                employee_id: employeeId,
+                load_level: level,
+                period_start: currentPeriodStart,
+                period_end: currentPeriodEnd,
+                subject: 0,
+                schedule_data: emptyScheduleFrames(),
+                mon: 0, tue: 0, wed: 0, thu: 0, fri: 0, sat: 0, sun: 0
+            };
+        }
+
+        function emptyScheduleFrames() {
+            return scheduleDays.reduce((frames, day) => {
+                frames[day.key] = [];
+                return frames;
+            }, {});
+        }
+
+        function normalizeScheduleFrames(value) {
+            const frames = emptyScheduleFrames();
+            let source = value;
+
+            if (typeof source === 'string') {
+                try {
+                    source = JSON.parse(source);
+                } catch (error) {
+                    source = {};
+                }
+            }
+
+            source = source && typeof source === 'object' ? source : {};
+
+            for (const day of scheduleDays) {
+                frames[day.key] = Array.isArray(source[day.key])
+                    ? source[day.key].map(frame => ({
+                        start: frame.start || '',
+                        end: frame.end || '',
+                        subject: frame.subject || '',
+                        room: frame.room || ''
+                    }))
+                    : [];
+            }
+
+            return frames;
+        }
+
+        function loadScheduleFrames(employeeId, level) {
+            return normalizeScheduleFrames(findLoading(employeeId, level).schedule_data || {});
+        }
+
+        function openScheduleModal(employeeId, level) {
+            const teacher = allEmployees.find(e => Number(e.id) === Number(employeeId));
+            if (!teacher) return;
+
+            const loading = findLoading(employeeId, level);
+            currentScheduleContext = { employeeId, level, teacher, loading };
+
+            document.getElementById('scheduleModalTitle').textContent = `Edit Schedule - ${teacher.full_name}`;
+            const subjectCount = getLoadingSubjectCount(employeeId, level);
+            document.getElementById('scheduleModalSubtitle').textContent =
+                `${levelLabel(level)} | ${assignmentLabel(teacher.assignment)} | ${currentPeriodStart} to ${currentPeriodEnd} | Subjects: ${subjectCount} (set in ${levelLabel(level)} Faculty Loading)`;
+            selectedScheduleDay = 'mon';
+            renderScheduleFrameTable(loadScheduleFrames(employeeId, level));
+            document.getElementById('scheduleModal').classList.add('show');
+        }
+
+        function closeScheduleModal() {
+            document.getElementById('scheduleModal').classList.remove('show');
+            currentScheduleContext = null;
+        }
+
+        function renderScheduleFrameTable(framesByDay) {
+            const tabs = scheduleDays.map(day => `
+                <button type="button" data-action="select-day" data-day="${day.key}" class="schedule-day-tab">
+                    ${day.label}
+                    <span class="block text-xs font-medium mt-1" data-tab-day-total="${day.key}">0.0 hrs</span>
+                </button>
+            `).join('');
+
+            const cards = scheduleDays.map(day => `
+                <section class="schedule-day-card" data-day-panel="${day.key}">
+                    <div class="schedule-day-header">
+                        <div>${day.label}</div>
+                        <div class="text-xs text-[#8a1f27] mt-1">Hours: <span data-day-total="${day.key}">0.0</span></div>
+                    </div>
+                    <div class="schedule-day-body">
+                        <div data-day-frames="${day.key}"></div>
+                        <button type="button" data-action="add-frame" data-day="${day.key}" class="mt-2 w-full px-3 py-1.5 text-sm font-medium text-[#8a1f27] bg-red-50 border border-red-100 rounded-lg hover:bg-red-100">
+                            Add time frame
+                        </button>
+                    </div>
+                </section>
+            `).join('');
+
+            document.getElementById('scheduleDayTabs').innerHTML = tabs;
+            document.getElementById('scheduleFrameGrid').innerHTML = cards;
+
+            for (const day of scheduleDays) {
+                const dayFrames = Array.isArray(framesByDay[day.key]) ? framesByDay[day.key] : [];
+                dayFrames.forEach(frame => addScheduleFrame(day.key, frame.start, frame.end, frame.subject, frame.room));
+                updateModalDayTotal(day.key);
+            }
+
+            selectScheduleDay(selectedScheduleDay);
+        }
+
+        function selectScheduleDay(day) {
+            selectedScheduleDay = day;
+
+            document.querySelectorAll('[data-day-panel]').forEach(panel => {
+                panel.classList.toggle('hidden', panel.dataset.dayPanel !== day);
+            });
+
+            document.querySelectorAll('[data-action="select-day"]').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.day === day);
+            });
+        }
+
+        function addScheduleFrame(day, start = '', end = '', subject = '', room = '') {
+            const container = document.querySelector(`[data-day-frames="${day}"]`);
+            if (!container) return;
+
+            const frame = document.createElement('div');
+            frame.className = 'schedule-frame-row';
+            frame.innerHTML = `
+                <input type="text" value="${escapeAttr(subject)}" data-day="${day}" data-frame-field="subject" placeholder="Subject name" class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                <input type="text" value="${escapeAttr(room)}" data-day="${day}" data-frame-field="room" placeholder="Room" class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                <input type="time" value="${escapeAttr(start)}" data-day="${day}" data-frame-field="start" class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                <input type="time" value="${escapeAttr(end)}" data-day="${day}" data-frame-field="end" class="border border-gray-200 rounded-lg px-2 py-1.5 text-sm focus:ring-2 focus:ring-[#b0303b]">
+                <button type="button" data-action="remove-frame" data-day="${day}" class="h-9 w-9 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100">&times;</button>
+            `;
+            container.appendChild(frame);
+            updateModalDayTotal(day);
+        }
+
+        function collectScheduleFrames() {
+            const frames = emptyScheduleFrames();
+            const totals = {};
+
+            for (const day of scheduleDays) {
+                totals[day.key] = 0;
+                const rows = document.querySelectorAll(`[data-day-frames="${day.key}"] .schedule-frame-row`);
+
+                for (const row of rows) {
+                    const start = row.querySelector('[data-frame-field="start"]').value;
+                    const end = row.querySelector('[data-frame-field="end"]').value;
+                    const subject = row.querySelector('[data-frame-field="subject"]').value.trim();
+                    const room = row.querySelector('[data-frame-field="room"]').value.trim();
+                    if (!start && !end && !subject && !room) continue;
+                    if (!start || !end) {
+                        throw new Error(`${day.label} has an incomplete time frame.`);
+                    }
+
+                    const hours = getFrameHours(start, end);
+                    if (hours <= 0) {
+                        throw new Error(`${day.label} has an invalid time frame.`);
+                    }
+
+                    frames[day.key].push({ start, end, subject, room });
+                    totals[day.key] += hours;
+                }
+            }
+
+            return { frames, totals };
+        }
+
+        function updateModalDayTotal(day) {
+            const totalCell = document.querySelector(`[data-day-total="${day}"]`);
+            if (!totalCell) return;
+
+            let total = 0;
+            document.querySelectorAll(`[data-day-frames="${day}"] .schedule-frame-row`).forEach(row => {
+                const start = row.querySelector('[data-frame-field="start"]').value;
+                const end = row.querySelector('[data-frame-field="end"]').value;
+                total += getFrameHours(start, end);
+            });
+            totalCell.textContent = total.toFixed(1);
+
+            const tabTotal = document.querySelector(`[data-tab-day-total="${day}"]`);
+            if (tabTotal) tabTotal.textContent = `${total.toFixed(1)} hrs`;
+        }
+
+        function getFrameHours(start, end) {
+            const startMinutes = timeToMinutes(start);
+            const endMinutes = timeToMinutes(end);
+            if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) return 0;
+            return (endMinutes - startMinutes) / 60;
+        }
+
+        function timeToMinutes(value) {
+            if (!value || !value.includes(':')) return null;
+            const [hours, minutes] = value.split(':').map(Number);
+            if (Number.isNaN(hours) || Number.isNaN(minutes)) return null;
+            return hours * 60 + minutes;
+        }
+
+        function getLoadingSubjectCount(employeeId, level) {
+            return toNumberOrZero(findLoading(employeeId, level).subject);
+        }
+
+        async function saveScheduleFromModal() {
+            if (!currentScheduleContext) return;
+
+            let schedule;
+            try {
+                schedule = collectScheduleFrames();
+            } catch (error) {
+                alert(error.message);
+                return;
+            }
+
+            const { employeeId, level } = currentScheduleContext;
+            const subject = getLoadingSubjectCount(employeeId, level);
+            const payload = {
+                employee_id: employeeId,
+                period_start: currentPeriodStart,
+                period_end: currentPeriodEnd,
+                subject,
+                schedule_data: schedule.frames,
+                mon: Number(schedule.totals.mon || 0),
+                tue: Number(schedule.totals.tue || 0),
+                wed: Number(schedule.totals.wed || 0),
+                thu: Number(schedule.totals.thu || 0),
+                fri: Number(schedule.totals.fri || 0),
+                sat: Number(schedule.totals.sat || 0),
+                sun: Number(schedule.totals.sun || 0),
+                total_hours: Object.values(schedule.totals).reduce((sum, hours) => sum + Number(hours || 0), 0)
+            };
+
+            try {
+                await saveTeacherSchedule(payload, level);
+
+                const existingIndex = allLoads.findIndex(l =>
+                    Number(l.employee_id) === Number(employeeId) &&
+                    l.load_level === level &&
+                    l.period_start === currentPeriodStart &&
+                    l.period_end === currentPeriodEnd
+                );
+
+                const updated = { ...payload, load_level: level };
+                if (existingIndex >= 0) {
+                    allLoads[existingIndex] = updated;
+                } else {
+                    allLoads.push(updated);
+                }
+
+                closeScheduleModal();
+                renderTable();
+                document.getElementById('loadingMessage').classList.add('hidden');
+                document.getElementById('teacherTable').classList.remove('hidden');
+                showSaveToast();
+            } catch (error) {
+                console.error('Error saving schedule:', error);
+                alert('Failed to save schedule. Please try again.');
+            }
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        }
+
+        function escapeAttr(str) {
+            return String(str || '').replace(/[&<>"']/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                if (m === '"') return '&quot;';
+                if (m === "'") return '&#39;';
+                return m;
+            });
+        }
+
+        function toNumberOrZero(value) {
+            const number = Number(value);
+            return Number.isFinite(number) ? number : 0;
+        }
+
+        async function handleInputChange(e) {
+            const input = e.target;
+            const row = input.closest('tr');
+            if (!row) return;
+
+            const employeeId = parseInt(row.dataset.id);
+            const loadLevel = row.dataset.level || activeLoadingLevel();
+            const field = input.dataset.field;
+            let value = input.type === 'number' ? (parseFloat(input.value) || 0) : input.value;
+
+            const teacher = allEmployees.find(e => e.id === employeeId);
+            if (!teacher) return;
+
+            const originalBg = input.style.backgroundColor;
+            input.style.backgroundColor = '#fff3cd';
+
+            let loading = allLoads.find(l =>
+                Number(l.employee_id) === Number(employeeId) &&
+                l.load_level === loadLevel &&
+                (
+                    l.period_start === currentPeriodStart && l.period_end === currentPeriodEnd
+                )
+            );
+
+            if (!loading) {
+                loading = {
+                    employee_id: employeeId,
+                    load_level: loadLevel,
+                    semester: currentSemester,
+                    school_year: currentSchoolYear,
+                    period_start: currentPeriodStart,
+                    period_end: currentPeriodEnd
+                };
+            }
+
+            loading[field] = value;
+
+            try {
+                await savePeriodLoad({
+                    employee_id: employeeId,
+                    period_start: currentPeriodStart,
+                    period_end: currentPeriodEnd,
+                    subject: toNumberOrZero(loading.subject),
+                    mon: Number(loading.mon || 0),
+                    tue: Number(loading.tue || 0),
+                    wed: Number(loading.wed || 0),
+                    thu: Number(loading.thu || 0),
+                    fri: Number(loading.fri || 0),
+                    sat: Number(loading.sat || 0),
+                    sun: Number(loading.sun || 0)
+                }, loadLevel);
+                showSaveToast();
+
+                const existingIndex = allLoads.findIndex(l =>
+                    Number(l.employee_id) === Number(employeeId) &&
+                    l.load_level === loadLevel &&
+                    (
+                    l.period_start === currentPeriodStart && l.period_end === currentPeriodEnd
+                    )
+                );
+                if (existingIndex >= 0) {
+                    allLoads[existingIndex] = loading;
+                } else {
+                    allLoads.push(loading);
+                }
+
+                const hours = (loading.mon || 0) + (loading.tue || 0) + (loading.wed || 0) +
+                              (loading.thu || 0) + (loading.fri || 0) + (loading.sat || 0) + (loading.sun || 0);
+
+                const rate = getRateForTeacher(teacher, loadLevel);
+                const totalPay = hours * rate;
+
+                const totalCell = row.querySelector('.total-hours-cell');
+                const payCell = row.querySelector('.total-pay-cell');
+                if (totalCell) totalCell.textContent = hours.toFixed(1);
+                if (payCell) payCell.textContent = `₱${totalPay.toFixed(2)}`;
+
+            } catch (error) {
+                console.error('Error saving:', error);
+                alert('Failed to save. Please try again.');
+                input.value = loading[field];
+            } finally {
+                input.style.backgroundColor = originalBg;
+            }
+        }
+
+        function attachInputListeners() {
+            const inputs = document.querySelectorAll('#tableBody input[type="text"], #tableBody input[type="number"]');
+            inputs.forEach(input => {
+                if (input.disabled) return;
+                input.removeEventListener('change', handleInputChange);
+                input.addEventListener('change', handleInputChange);
+            });
+        }
+
+        window.closePasswordModal = function() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        };
+
+        window.closeActivityModal = function() {
+            document.getElementById('activityModal').classList.add('hidden');
+        };
+
+        window.changePassword = function() {
+            showDashboardSection('settings');
+            document.getElementById('passwordModal').classList.remove('hidden');
+        };
+
+        window.viewActivity = function() {
+            showDashboardSection('settings');
+            document.getElementById('activityModal').classList.remove('hidden');
+        };
+
+        window.updatePassword = async function() {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+
+            if (!current || !newPass || !confirm) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (newPass !== confirm) {
+                alert('New passwords do not match');
+                return;
+            }
+
+            if (newPass.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+
+            try {
+                const activeUser = JSON.parse(localStorage.getItem('user') || '{}');
+                const demoUsers = ['accountant', 'superadmin', 'oic'];
+                if (demoUsers.includes(activeUser.username)) {
+                    alert('Password updated successfully!');
+                    closePasswordModal();
+                    return;
+                }
+
+                if (Database) {
+                    await Database.ensureDatabaseReady();
+                    const users = await Database.getAllUsers();
+                    const currentUser = users.find(u => u.username === activeUser.username);
+
+                    if (!currentUser) {
+                        alert('User not found');
+                        return;
+                    }
+
+                    if (current !== currentUser.password) {
+                        alert('Current password is incorrect');
+                        return;
+                    }
+
+                    currentUser.password = newPass;
+                    await Database.updateUser(currentUser);
+                }
+
+                alert('Password updated successfully!');
+                closePasswordModal();
+            } catch (error) {
+                console.error('Error updating password:', error);
+                alert('Error updating password. Please try again.');
+            }
+        };
+
+        window.logout = async function() {
+            if (!confirm('Are you sure you want to logout?')) return;
+
+            try {
+                await fetch('/api/auth/logout.php', { method: 'POST', credentials: 'include' });
+            } catch (e) {
+                console.error('Logout error:', e);
+            }
+
+            localStorage.clear();
+            window.location.href = 'index.html';
+        };
+
+        loadOicUserInfo();
+        if (window.location.hash === '#settings') {
+            showDashboardSection('settings');
+        }
+        await initPeriodControls();
+        updateScheduleFiltersVisibility();
+        loadData();
+    </script>
+</body>
+</html>
