@@ -43,4 +43,6 @@ RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf \
 EXPOSE 80
 
 # Start Apache
-CMD ["apache2-foreground"]
+EXPOSE 10000
+
+CMD sed -i "s/80/${PORT}/g" /etc/apache2/ports.conf /etc/apache2/sites-available/000-default.conf && apache2-foreground
