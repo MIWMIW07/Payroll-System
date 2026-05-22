@@ -325,14 +325,18 @@
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-            await ensureCurrentUserRole();
+            await initializeCurrentUserContext();
             updateUserNameDisplay();
             updateNavigationForRole();
             toggleAssignmentFields();
         });
 
-        async function ensureCurrentUserRole() {
-            if (getCurrentUserRole()) return;
+        async function initializeCurrentUserContext() {
+            const navigationUser = await waitForNavigationUser();
+            if (navigationUser) {
+                persistUserContext(navigationUser);
+                return;
+            }
 
             try {
                 const response = await fetch('/api/auth/session.php', {
@@ -343,26 +347,50 @@
                 if (!response.ok) return;
 
                 const data = await response.json();
-                if (data.authenticated && data.user?.role) {
-                    localStorage.setItem('userRole', data.user.role);
-                    sessionStorage.setItem('userRole', data.user.role);
-                    const displayName = data.user.full_name || data.user.username || data.user.role || 'User';
-                    localStorage.setItem('userName', displayName);
-                    sessionStorage.setItem('userName', displayName);
-                    window.userRole = data.user.role;
-                    window.userName = displayName;
+                if (data.authenticated && data.user) {
+                    persistUserContext(data.user);
                 }
             } catch (error) {
                 console.warn('Could not load current user role:', error);
             }
         }
 
+        async function waitForNavigationUser() {
+            for (let attempt = 0; attempt < 20; attempt += 1) {
+                if (window.currentUser?.role) {
+                    return window.currentUser;
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 25));
+            }
+
+            return null;
+        }
+
+        function persistUserContext(user) {
+            if (!user?.role) return;
+
+            const displayName = user.full_name || user.username || user.role || 'User';
+            window.currentUser = user;
+            window.userRole = user.role;
+            window.userName = displayName;
+
+            try {
+                localStorage.setItem('userRole', user.role);
+                sessionStorage.setItem('userRole', user.role);
+                localStorage.setItem('userName', displayName);
+                sessionStorage.setItem('userName', displayName);
+            } catch (error) {
+                console.warn('User context storage not available:', error);
+            }
+        }
+
         function getCurrentUserRole() {
-            return window.userRole || localStorage.getItem('userRole') || sessionStorage.getItem('userRole') || '';
+            return window.currentUser?.role || window.userRole || sessionStorage.getItem('userRole') || localStorage.getItem('userRole') || '';
         }
 
         function getCurrentUserName() {
-            return window.userName || localStorage.getItem('userName') || sessionStorage.getItem('userName') || getCurrentUserRole() || 'User';
+            return window.currentUser?.full_name || window.currentUser?.username || window.userName || sessionStorage.getItem('userName') || localStorage.getItem('userName') || getCurrentUserRole() || 'User';
         }
 
         function updateUserNameDisplay() {
