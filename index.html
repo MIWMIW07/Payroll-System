@@ -177,9 +177,11 @@
                         'teacher': 'teacher-dashboard.html',
                         'guard': 'dashboard-guard.html',
                         'sa': 'dashboard-sa.html',
+                        'admin': 'dashboard-staff.html',
+                        'admin_staff': 'dashboard-staff.html',
                         'admin-staff': 'dashboard-staff.html'
                     };
-                    window.location.replace(dashboards[result.user.role] || 'dashboard.html');
+                    window.location.replace(dashboards[normalizeRole(result.user.role)] || 'dashboard.html');
                 }
             } catch (e) {
                 // Not logged in, stay on login page
@@ -214,11 +216,17 @@
                 'oic': 'dashboard-oic.html',
                 'teacher': 'teacher-dashboard.html',
                 'admin': 'dashboard-staff.html',
+                'admin_staff': 'dashboard-staff.html',
+                'admin-staff': 'dashboard-staff.html',
                 'staff': 'dashboard-staff.html',
                 'guard': 'dashboard-guard.html',
                 'sa': 'dashboard-sa.html'
             };
-            return dashboards[role] || 'dashboard.html';
+            return dashboards[normalizeRole(role)] || 'dashboard.html';
+        }
+
+        function normalizeRole(role) {
+            return String(role || '').trim().toLowerCase();
         }
 
         // Login handler - calls backend API with session
@@ -266,10 +274,12 @@
                         'teacher': 'teacher-dashboard.html',
                         'guard': 'dashboard-guard.html',
                         'sa': 'dashboard-sa.html',
+                        'admin': 'dashboard-staff.html',
+                        'admin_staff': 'dashboard-staff.html',
                         'admin-staff': 'dashboard-staff.html'
                     };
                     
-                    const redirect = dashboards[result.user.role] || 'dashboard.html';
+                    const redirect = dashboards[normalizeRole(result.user.role)] || 'dashboard.html';
                     setTimeout(() => { window.location.href = redirect; }, 800);
                     
                 } else {

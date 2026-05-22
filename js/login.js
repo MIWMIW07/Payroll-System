@@ -22,9 +22,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 'teacher': 'teacher-dashboard.html',
                 'guard': 'dashboard-guard.html',
                 'sa': 'dashboard-sa.html',
-                'admin_staff': 'dashboard-staff.html'
+                'admin': 'dashboard-staff.html',
+                'admin_staff': 'dashboard-staff.html',
+                'admin-staff': 'dashboard-staff.html'
             };
-            window.location.href = dashboards[user.role] || 'dashboard.html';
+            window.location.href = dashboards[normalizeRole(user.role)] || 'dashboard.html';
         }
     });
 
@@ -145,10 +147,12 @@ async function handleLogin(username, password, rememberMe) {
                 'teacher': 'teacher-dashboard.html',
                 'guard': 'dashboard-guard.html',
                 'sa': 'dashboard-sa.html',
-                'admin_staff': 'dashboard-staff.html'
+                'admin': 'dashboard-staff.html',
+                'admin_staff': 'dashboard-staff.html',
+                'admin-staff': 'dashboard-staff.html'
             };
 
-            const redirectUrl = dashboards[data.user.role] || 'dashboard.html';
+            const redirectUrl = dashboards[normalizeRole(data.user.role)] || 'dashboard.html';
             return { success: true, redirect: redirectUrl };
         } else {
             return { success: false, message: data.error || 'Invalid username or password' };
@@ -157,4 +161,8 @@ async function handleLogin(username, password, rememberMe) {
         console.error('Login error:', error);
         return { success: false, message: 'Network error. Please try again.' };
     }
+}
+
+function normalizeRole(role) {
+    return String(role || '').trim().toLowerCase();
 }

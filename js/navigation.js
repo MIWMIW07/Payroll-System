@@ -8,6 +8,10 @@
 const currentPageName = window.location.pathname.split('/').pop();
 const publicPages = ['index.html', '', 'login.html'];
 
+function normalizeRole(role) {
+    return String(role || '').trim().toLowerCase().replace(/_/g, '-');
+}
+
 // Role-based page mappings - COMPLETE
 const rolePages = {
     accountant: [
@@ -65,6 +69,12 @@ const rolePages = {
         'my-attendance.html',
         'my-payslips.html',
         'profile.html'
+    ],
+    admin: [
+        'dashboard-staff.html',
+        'my-attendance.html',
+        'my-payslips.html',
+        'profile.html'
     ]
 };
 
@@ -76,7 +86,8 @@ const dashboards = {
     'teacher': 'teacher-dashboard.html',
     'guard': 'dashboard-guard.html',
     'sa': 'dashboard-sa.html',
-    'admin-staff': 'dashboard-staff.html'
+    'admin-staff': 'dashboard-staff.html',
+    'admin': 'dashboard-staff.html'
 };
 
 // ===========================
@@ -253,7 +264,7 @@ async function checkAuth() {
     setSessionState(SESSION_ACTIVE);
     
     // Role-based page access check
-    const userRole = user.role?.toLowerCase() || 'accountant';
+    const userRole = normalizeRole(user.role) || 'accountant';
     const allowedPages = rolePages[userRole] || [];
     
     // Special case: attendanceSadmin.html is removed
@@ -418,7 +429,7 @@ document.addEventListener('click', function(event) {
 
 function viewProfile() {
     const user = window.currentUser || {};
-    const role = user.role?.toLowerCase() || 'accountant';
+    const role = normalizeRole(user.role) || 'accountant';
     
     if (role === 'superadmin') {
         window.location.href = 'settingsSadmin.html';
@@ -437,7 +448,7 @@ function changePassword() {
         document.dispatchEvent(event);
     } else {
         const user = window.currentUser || {};
-        const role = user.role?.toLowerCase() || 'accountant';
+        const role = normalizeRole(user.role) || 'accountant';
         
         if (role === 'superadmin') {
             window.location.href = 'settingsSadmin.html';
@@ -453,7 +464,7 @@ function changePassword() {
 
 function viewActivity() {
     const user = window.currentUser || {};
-    const role = user.role?.toLowerCase() || 'accountant';
+    const role = normalizeRole(user.role) || 'accountant';
     
     if (role === 'superadmin') {
         if (currentPageName === 'settingsSadmin.html') {
@@ -483,45 +494,45 @@ function viewAuditLog() {
 // ROLE-BASED NAVIGATION HELPERS
 // ===========================
 function getDashboardUrl() {
-    const role = window.currentUser?.role;
+    const role = normalizeRole(window.currentUser?.role);
     return dashboards[role] || 'index.html';
 }
 
 function getEmployeesUrl() {
-    const role = window.currentUser?.role;
+    const role = normalizeRole(window.currentUser?.role);
     if (role === 'superadmin') return 'employeesSadmin.html';
     if (role === 'accountant') return 'employees.html';
     return 'teacher-dashboard.html';
 }
 
 function getAttendanceUrl() {
-    const role = window.currentUser?.role;
+    const role = normalizeRole(window.currentUser?.role);
     if (role === 'superadmin') return 'dashboardSadmin.html';
     if (role === 'accountant') return 'attendance.html';
     if (role === 'guard') return 'my-attendance.html';
     if (role === 'sa') return 'my-attendance.html';
-    if (role === 'admin-staff') return 'my-attendance.html';
+    if (role === 'admin-staff' || role === 'admin') return 'my-attendance.html';
     return 'teacher-attendance.html';
 }
 
 function getPayrollUrl() {
-    const role = window.currentUser?.role;
+    const role = normalizeRole(window.currentUser?.role);
     if (role === 'superadmin') return 'payrollSadmin.html';
     if (role === 'accountant') return 'payroll.html';
     if (role === 'guard') return 'my-payslips.html';
     if (role === 'sa') return 'my-payslips.html';
-    if (role === 'admin-staff') return 'my-payslips.html';
+    if (role === 'admin-staff' || role === 'admin') return 'my-payslips.html';
     return 'teacher-payslips.html';
 }
 
 function getSettingsUrl() {
-    const role = window.currentUser?.role;
+    const role = normalizeRole(window.currentUser?.role);
     if (role === 'superadmin') return 'settingsSadmin.html';
     if (role === 'accountant') return 'settings.html';
     if (role === 'oic') return 'dashboard-oic.html#settings';
     if (role === 'guard') return 'profile.html';
     if (role === 'sa') return 'profile.html';
-    if (role === 'admin-staff') return 'profile.html';
+    if (role === 'admin-staff' || role === 'admin') return 'profile.html';
     return 'teacher-profile.html';
 }
 
