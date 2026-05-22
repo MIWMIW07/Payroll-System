@@ -323,10 +323,58 @@
 
     <script src="js/navigation.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            await ensureCurrentUserRole();
+            updateNavigationForRole();
             toggleAssignmentFields();
         });
+
+        async function ensureCurrentUserRole() {
+            if (getCurrentUserRole()) return;
+
+            try {
+                const response = await fetch('/api/auth/session.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                if (!response.ok) return;
+
+                const data = await response.json();
+                if (data.authenticated && data.user?.role) {
+                    localStorage.setItem('userRole', data.user.role);
+                    sessionStorage.setItem('userRole', data.user.role);
+                    window.userRole = data.user.role;
+                }
+            } catch (error) {
+                console.warn('Could not load current user role:', error);
+            }
+        }
+
+        function getCurrentUserRole() {
+            return window.userRole || localStorage.getItem('userRole') || sessionStorage.getItem('userRole') || '';
+        }
+
+        function getEmployeesPageForCurrentRole() {
+            return getCurrentUserRole().toLowerCase() === 'accountant' ? 'employees.html' : 'employeesSadmin.html';
+        }
+
+        function updateNavigationForRole() {
+            const isAccountant = getCurrentUserRole().toLowerCase() === 'accountant';
+            const links = {
+                'dashboardSadmin.html': isAccountant ? 'dashboard.html' : 'dashboardSadmin.html',
+                'employeesSadmin.html': isAccountant ? 'employees.html' : 'employeesSadmin.html',
+                'payrollSadmin.html': isAccountant ? 'payroll.html' : 'payrollSadmin.html',
+                'attendanceSadmin.html': isAccountant ? 'attendance.html' : 'attendanceSadmin.html',
+                'settingsSadmin.html': isAccountant ? 'settings.html' : 'settingsSadmin.html'
+            };
+
+            Object.entries(links).forEach(([currentHref, nextHref]) => {
+                const link = document.querySelector(`a[href="${currentHref}"]`);
+                if (link) link.href = nextHref;
+            });
+        }
 
         function toggleAssignmentFields() {
             const assignment = document.getElementById('assignmentType').value;
@@ -431,7 +479,7 @@
                 }, password);
                 
                 alert('Employee and login account added successfully!');
-                window.location.href = 'employeesSadmin.html';
+                window.location.href = getEmployeesPageForCurrentRole();
                 
             } catch (error) {
                 console.error('Error adding employee:', error);
@@ -489,7 +537,7 @@
         }
 
         function goBack() {
-            window.location.href = 'employeesSadmin.html';
+            window.location.href = getEmployeesPageForCurrentRole();
         }
 
         function logout() {

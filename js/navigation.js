@@ -239,6 +239,12 @@ async function checkAuth() {
     // Also store in window for easy access
     window.userRole = user.role;
     window.userName = user.full_name;
+    try {
+        localStorage.setItem('userRole', user.role);
+        sessionStorage.setItem('userRole', user.role);
+    } catch (e) {
+        console.warn('User role storage not available');
+    }
     
     // Set session state for cross-tab sync (ACTIVE means logged in)
     setSessionState(SESSION_ACTIVE);

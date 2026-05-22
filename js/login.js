@@ -5,6 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // If already logged in (session exists), redirect to dashboard
     checkSession().then(user => {
         if (user && window.location.pathname.includes('index.html')) {
+            try {
+                localStorage.setItem('userRole', user.role);
+                sessionStorage.setItem('userRole', user.role);
+            } catch (e) {
+                console.warn('User role storage not available');
+            }
+
             const dashboards = {
                 'superadmin': 'dashboardSadmin.html',
                 'accountant': 'dashboard.html',
@@ -118,6 +125,8 @@ async function handleLogin(username, password, rememberMe) {
             try {
                 localStorage.setItem('payroll_session_state', 'active');
                 localStorage.setItem('payroll_session_time', Date.now().toString());
+                localStorage.setItem('userRole', data.user.role);
+                sessionStorage.setItem('userRole', data.user.role);
             } catch (e) {
                 // Storage might be disabled
                 console.warn('Session storage not available');

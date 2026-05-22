@@ -4,9 +4,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     // Initialize database
     await Database.ensureDatabaseReady();
 
+    function getEmployeesPageForCurrentRole() {
+        const userRole = localStorage.getItem('userRole') || sessionStorage.getItem('userRole');
+        return userRole?.toLowerCase() === 'accountant' ? 'employees.html' : 'employeesSadmin.html';
+    }
+
     // BACK BUTTON
     window.goBack = function() {
-        window.location.href = "employeesSadmin.html";
+        window.location.href = getEmployeesPageForCurrentRole();
     };
 
     // DROPDOWN
@@ -75,7 +80,7 @@ window.addEventListener("DOMContentLoaded", async () => {
             // Save to database
             await Database.addEmployee(newEmployee);
             alert("Employee added successfully!");
-            window.location.href = "employeesSadmin.html";
+            window.location.href = getEmployeesPageForCurrentRole();
         } catch (error) {
             console.error("Error adding employee:", error);
             alert("Error adding employee. Please try again.");
