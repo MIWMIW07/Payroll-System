@@ -56,13 +56,13 @@ const rolePages = {
         'dashboard-guard.html',
         'guard-attendance.html',
         'guard-payslips.html',
-        'staff-profile.html'
+        'guard-profile.html'
     ],
     sa: [
         'dashboard-sa.html',
         'sa-attendance.html',
         'sa-payslips.html',
-        'staff-profile.html'
+        'sa-profile.html'
     ],
     'admin-staff': [
         'dashboard-staff.html',
@@ -435,6 +435,8 @@ function viewProfile() {
         window.location.href = 'settingsSadmin.html';
     } else if (role === 'oic') {
         openOicSettings();
+    } else if (['teacher', 'guard', 'sa', 'admin-staff', 'admin'].includes(role)) {
+        window.location.href = getSettingsUrl();
     } else {
         window.location.href = 'settings.html';
     }
@@ -454,6 +456,8 @@ function changePassword() {
             window.location.href = 'settingsSadmin.html';
         } else if (role === 'oic') {
             openOicSettings();
+        } else if (['teacher', 'guard', 'sa', 'admin-staff', 'admin'].includes(role)) {
+            window.location.href = getSettingsUrl();
         } else {
             window.location.href = 'settings.html';
         }
@@ -530,8 +534,8 @@ function getSettingsUrl() {
     if (role === 'superadmin') return 'settingsSadmin.html';
     if (role === 'accountant') return 'settings.html';
     if (role === 'oic') return 'dashboard-oic.html#settings';
-    if (role === 'guard') return 'staff-profile.html';
-    if (role === 'sa') return 'staff-profile.html';
+    if (role === 'guard') return 'guard-profile.html';
+    if (role === 'sa') return 'sa-profile.html';
     if (role === 'admin-staff' || role === 'admin') return 'staff-profile.html';
     return 'teacher-profile.html';
 }

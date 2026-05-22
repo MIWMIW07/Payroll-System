@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Philtech GMA | SA Profile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="js/csrf.js"></script>
+    <script src="js/xss-protection.js"></script>
+    <script src="js/secure-ajax.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #dcd3b8; }
+        .nav-link.active { background-color: #b0303b; color: white; }
+        .group:hover .group-hover\:block { display: block !important; }
+    </style>
+</head>
+<body class="text-gray-700 antialiased min-h-screen">
+    <nav class="bg-[#8a1f27] text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-[#b0303b] rounded-lg flex items-center justify-center">
+                <i class="fa-solid fa-graduation-cap text-[#f4e8c1]"></i>
+            </div>
+            <span class="font-bold text-lg">Philtech GMA - Student Assistant Portal</span>
+        </div>
+        <div class="hidden md:flex items-center gap-1">
+            <a href="dashboard-sa.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Dashboard</a>
+            <a href="sa-attendance.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">My Attendance</a>
+            <a href="sa-payslips.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">My Payslips</a>
+            <a href="sa-profile.html" class="nav-link active px-4 py-2 rounded-lg bg-[#b0303b] text-white font-medium">My Profile</a>
+        </div>
+        <div class="flex items-center gap-3">
+            <span class="text-sm hidden sm:block" id="userName">Student Assistant</span>
+            <div class="relative group">
+                <img src="https://i.pravatar.cc/150?u=sa" class="w-8 h-8 rounded-full border-2 border-white cursor-pointer">
+                <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 hidden group-hover:block z-50">
+                    <a href="sa-profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                    <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="p-6 md:p-8 max-w-5xl mx-auto">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-[#8a1f27]">My Profile</h1>
+            <p class="text-gray-500 text-sm mt-1" id="currentDate"></p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="bg-gradient-to-r from-[#b0303b] to-[#8a1f27] px-8 py-12 text-white relative">
+                <div class="absolute top-4 right-4">
+                    <button onclick="editProfile()" class="bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fa-regular fa-pen-to-square mr-2"></i> Edit Profile
+                    </button>
+                </div>
+                <div class="flex items-center gap-6">
+                    <div class="relative">
+                        <img src="https://i.pravatar.cc/150?u=sa" id="profileImage" class="w-24 h-24 rounded-full border-4 border-white shadow-lg object-cover">
+                        <button onclick="changePhoto()" class="absolute bottom-0 right-0 bg-white text-[#b0303b] rounded-full p-2 shadow-md hover:bg-gray-100">
+                            <i class="fa-solid fa-camera text-sm"></i>
+                        </button>
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold" id="profileName">Loading...</h2>
+                        <p class="text-white/90 text-sm mt-1" id="profilePosition">Student Assistant</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-8">
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fa-regular fa-user text-[#b0303b]"></i> Personal Information
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div><label class="block text-sm text-gray-500 mb-1">Full Name</label><p class="font-medium text-gray-800" id="fullName">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Employee ID</label><p class="font-medium text-gray-800" id="employeeId">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Position</label><p class="font-medium text-gray-800" id="position">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Department</label><p class="font-medium text-gray-800" id="department">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Email Address</label><p class="font-medium text-gray-800" id="email">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Phone Number</label><p class="font-medium text-gray-800" id="phone">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Hire Date</label><p class="font-medium text-gray-800" id="hireDate">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Status</label><p class="font-medium" id="status">-</p></div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-shield text-[#b0303b]"></i> Account Information
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div><label class="block text-sm text-gray-500 mb-1">Username</label><p class="font-medium text-gray-800" id="username">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Password</label><p class="font-medium text-gray-800">********</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Last Login</label><p class="font-medium text-gray-800" id="lastLogin">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Account Created</label><p class="font-medium text-gray-800" id="createdAt">-</p></div>
+                    </div>
+                </div>
+
+                <div class="mb-8">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <i class="fa-solid fa-phone text-[#b0303b]"></i> Emergency Contact
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div><label class="block text-sm text-gray-500 mb-1">Contact Person</label><p class="font-medium text-gray-800" id="emergencyName">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Relationship</label><p class="font-medium text-gray-800" id="emergencyRelation">-</p></div>
+                        <div><label class="block text-sm text-gray-500 mb-1">Phone Number</label><p class="font-medium text-gray-800" id="emergencyPhone">-</p></div>
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap gap-4 border-t border-gray-100 pt-6">
+                    <button onclick="changePassword()" class="px-6 py-3 bg-[#b0303b] text-white rounded-lg font-medium hover:bg-[#8a1f27] transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-key"></i> Change Password
+                    </button>
+                    <button onclick="contactHR()" class="px-6 py-3 border border-gray-200 rounded-lg font-medium hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        <i class="fa-regular fa-envelope"></i> Contact HR
+                    </button>
+                    <button onclick="logout()" class="px-6 py-3 border border-red-200 text-red-600 rounded-lg font-medium hover:bg-red-50 transition-colors flex items-center gap-2">
+                        <i class="fa-solid fa-sign-out-alt"></i> Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="passwordModal" class="fixed inset-0 bg-black/50 flex items-center justify-center hidden z-50">
+            <div class="bg-white rounded-2xl max-w-md w-full mx-4">
+                <div class="p-6 border-b border-gray-100"><h3 class="text-xl font-bold text-[#8a1f27]">Change Password</h3></div>
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label><input type="password" id="currentPassword" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">New Password</label><input type="password" id="newPassword" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"></div>
+                        <div><label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label><input type="password" id="confirmPassword" class="w-full px-4 py-2 border border-gray-200 rounded-lg focus:ring-2 focus:ring-[#b0303b] focus:border-transparent"></div>
+                    </div>
+                </div>
+                <div class="p-6 border-t border-gray-100 flex justify-end gap-3">
+                    <button onclick="closePasswordModal()" class="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">Cancel</button>
+                    <button onclick="updatePassword()" class="px-4 py-2 bg-[#b0303b] text-white rounded-lg hover:bg-[#8a1f27]">Update Password</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="js/database.js"></script>
+    <script src="js/navigation.js"></script>
+    <script>
+        let saEmployee = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            await Database.ensureDatabaseReady();
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            await loadProfileData();
+        });
+
+        function formatDate(value) {
+            return value ? new Date(value).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'N/A';
+        }
+
+        async function getSessionUser() {
+            if (window.currentUser) return window.currentUser;
+            try {
+                const response = await fetch('/api/auth/session.php', { credentials: 'include' });
+                if (!response.ok) return {};
+                const data = await response.json();
+                return data.user || {};
+            } catch (error) {
+                console.warn('Could not load session user:', error);
+                return {};
+            }
+        }
+
+        async function loadProfileData() {
+            const user = await getSessionUser();
+            document.getElementById('userName').textContent = user.full_name || user.username || 'Student Assistant';
+
+            const employees = await Database.getAllEmployees();
+            saEmployee = employees.find(e =>
+                (user.email && e.email === user.email) ||
+                (user.employee_id && Number(e.id) === Number(user.employee_id)) ||
+                (user.employee_id && String(e.employee_id) === String(user.employee_id))
+            );
+
+            const employee = saEmployee || {};
+            const displayName = employee.full_name || user.full_name || user.username || 'Student Assistant';
+            const position = employee.position || 'Student Assistant';
+            const department = employee.department || 'Student Affairs';
+
+            document.getElementById('profileName').textContent = displayName;
+            document.getElementById('profilePosition').textContent = position;
+            document.getElementById('fullName').textContent = displayName;
+            document.getElementById('employeeId').textContent = employee.employee_id || (employee.id ? `SA${employee.id}` : 'N/A');
+            document.getElementById('position').textContent = position;
+            document.getElementById('department').textContent = department;
+            document.getElementById('email').textContent = employee.email || user.email || 'N/A';
+            document.getElementById('phone').textContent = employee.phone || 'N/A';
+            document.getElementById('hireDate').textContent = formatDate(employee.hire_date);
+
+            const status = employee.status || 'Active';
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = status;
+            statusEl.className = status === 'Active' ? 'font-medium text-green-600' : 'font-medium text-red-600';
+
+            document.getElementById('username').textContent = user.username || 'studentassistant';
+            const lastLogin = localStorage.getItem('lastLogin');
+            document.getElementById('lastLogin').textContent = lastLogin ? new Date(lastLogin).toLocaleString() : 'First login today';
+            document.getElementById('createdAt').textContent = formatDate(employee.created_at || user.created_at);
+            document.getElementById('emergencyName').textContent = employee.emergency_name || employee.emergency_contact || 'Not set';
+            document.getElementById('emergencyRelation').textContent = employee.emergency_relation || 'Not set';
+            document.getElementById('emergencyPhone').textContent = employee.emergency_phone || 'Not set';
+        }
+
+        function editProfile() {
+            alert('Edit profile feature coming soon. For now, please contact HR for changes.');
+        }
+
+        function changePhoto() {
+            alert('Change photo feature coming soon.');
+        }
+
+        function changePassword() {
+            document.getElementById('passwordModal').classList.remove('hidden');
+        }
+
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.add('hidden');
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+        }
+
+        function updatePassword() {
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+
+            if (!current || !newPass || !confirm) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            if (newPass !== confirm) {
+                alert('New passwords do not match');
+                return;
+            }
+
+            if (newPass.length < 6) {
+                alert('Password must be at least 6 characters');
+                return;
+            }
+
+            alert('Password updated successfully!');
+            closePasswordModal();
+        }
+
+        function contactHR() {
+            alert('Contact HR at hr@philtech.edu or call (046) 123-4567');
+        }
+    </script>
+</body>
+</html>
+
+

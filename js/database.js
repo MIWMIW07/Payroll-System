@@ -361,7 +361,16 @@ async function getAllAttendance() {
     return Array.isArray(attendance) ? attendance : [];
 }
 
-async function getAttendanceByEmployee(employeeId) {
+async function getAttendanceByEmployee(employeeId, tabType = null) {
+    if (tabType && ['guard', 'sa'].includes(tabType)) {
+        const api = await ensureApiIntegration();
+        const attendance = await api.getAttendance(tabType);
+        return (Array.isArray(attendance) ? attendance : []).filter(a =>
+            Number(a.employee_id) === Number(employeeId) ||
+            String(a.employee_id) === String(employeeId)
+        );
+    }
+
     const all = await getAllAttendance();
     return all.filter(a => Number(a.employee_id) === Number(employeeId));
 }

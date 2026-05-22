@@ -7,11 +7,11 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="js/csrf.js"></script><script src="js/xss-protection.js"></script><script src="js/secure-ajax.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #dcd3b8; }
         .nav-link.active { background-color: #b0303b; color: white; }
         .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-        .cutoff-filter { background: white; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
         .filter-select { padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; }
         .status-approved { background: #d4edda; color: #155724; padding: 4px 12px; border-radius: 50px; font-size: .75rem; font-weight: 500; }
         .status-pending { background: #fff3cd; color: #856404; padding: 4px 12px; border-radius: 50px; font-size: .75rem; font-weight: 500; }
@@ -20,38 +20,70 @@
 <body class="text-gray-700 antialiased min-h-screen">
     <nav class="bg-[#8a1f27] text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 shadow-md">
         <div class="flex items-center gap-2"><div class="w-8 h-8 bg-[#b0303b] rounded-lg flex items-center justify-center"><i class="fa-solid fa-graduation-cap text-[#f4e8c1]"></i></div><span class="font-bold text-lg">Philtech GMA - Student Assistant Portal</span></div>
-        <div class="hidden md:flex items-center gap-1">
-            <a href="dashboard-sa.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Dashboard</a>
-            <a href="sa-attendance.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">My Attendance</a>
-            <a href="sa-payslips.html" class="nav-link active px-4 py-2 rounded-lg font-medium">My Payslips</a>
-            <a href="staff-profile.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Profile</a>
-        </div>
+        <div class="hidden md:flex items-center gap-1"><a href="dashboard-sa.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Dashboard</a><a href="sa-attendance.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">My Attendance</a><a href="sa-payslips.html" class="nav-link active px-4 py-2 rounded-lg font-medium">My Payslips</a><a href="sa-profile.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Profile</a></div>
         <div class="flex items-center gap-3"><span class="text-sm hidden sm:block" id="userName">Student Assistant</span><img src="https://i.pravatar.cc/150?u=sa" class="w-8 h-8 rounded-full border-2 border-white"></div>
     </nav>
     <main class="p-6 md:p-8 max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-6"><div><h1 class="text-2xl font-bold text-[#8a1f27]">My Payslips</h1><p class="text-gray-500 text-sm mt-1" id="currentDate"></p></div><button onclick="window.location.href='dashboard-sa.html'" class="bg-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button></div>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"><div class="stat-card"><p class="text-sm text-gray-500 mb-1">Total Payslips</p><h3 class="text-2xl font-bold text-gray-800" id="totalPayslips">0</h3></div><div class="stat-card"><p class="text-sm text-gray-500 mb-1">Total Net Pay</p><h3 class="text-2xl font-bold text-[#b0303b]" id="totalNetPay">PHP 0.00</h3></div><div class="stat-card"><p class="text-sm text-gray-500 mb-1">Average Pay</p><h3 class="text-2xl font-bold text-gray-800" id="averagePay">PHP 0.00</h3></div></div>
-        <div class="cutoff-filter"><div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Select Period</label><select id="cutoffSelect" class="filter-select w-full md:w-64" onchange="filterPayslips()"><option value="all">All Periods</option></select></div><div class="text-sm text-gray-500" id="selectedPeriodInfo"></div></div></div>
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50 text-xs text-gray-500"><tr><th class="py-3 px-6">Period</th><th class="py-3">Regular Hours</th><th class="py-3">Admin Hours</th><th class="py-3">Gross Pay</th><th class="py-3">Deductions</th><th class="py-3">Net Pay</th><th class="py-3">Status</th><th class="py-3 text-right pr-6">Actions</th></tr></thead><tbody class="text-sm" id="payslipTableBody"><tr><td colspan="8" class="py-8 text-center text-gray-400">Loading...</td></tr></tbody></table></div><div class="px-6 py-3 border-t border-gray-100 flex justify-between items-center"><span class="text-xs text-gray-400" id="paginationInfo">Showing 0-0 of 0</span><div class="flex gap-1" id="paginationControls"></div></div></div>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6"><div><h1 class="text-2xl font-bold text-[#8a1f27]">My Payslips</h1><p class="text-gray-500 text-sm mt-1" id="currentDate"></p></div><button onclick="window.location.href='dashboard-sa.html'" class="bg-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"><div class="stat-card"><p class="text-sm text-gray-500 mb-1">Total Payslips</p><h3 class="text-2xl font-bold text-gray-800" id="totalPayslips">0</h3></div><div class="stat-card"><p class="text-sm text-gray-500 mb-1">Total Net Pay</p><h3 class="text-2xl font-bold text-[#b0303b]" id="totalNetPay">PHP 0.00</h3></div><div class="stat-card"><p class="text-sm text-gray-500 mb-1">Average Monthly</p><h3 class="text-2xl font-bold text-gray-800" id="averagePay">PHP 0.00</h3></div></div>
+        <div class="bg-white rounded-xl p-4 mb-6"><div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Select Period</label><select id="cutoffSelect" class="filter-select w-full md:w-72" onchange="filterPayslips()"><option value="all">All Periods</option></select></div><div class="text-sm text-gray-500" id="selectedPeriodInfo"></div></div></div>
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden"><div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50 text-xs text-gray-500"><tr><th class="py-3 px-6">Period</th><th class="py-3">SA Rate</th><th class="py-3">Days Worked</th><th class="py-3">Gross Pay</th><th class="py-3">Tax</th><th class="py-3">Net Pay</th><th class="py-3">Status</th><th class="py-3 text-right pr-6">Actions</th></tr></thead><tbody class="text-sm" id="payslipTableBody"><tr><td colspan="8" class="py-8 text-center text-gray-400">Loading...</td></tr></tbody></table></div><div class="px-6 py-3 border-t border-gray-100 flex justify-between items-center"><span class="text-xs text-gray-400" id="paginationInfo">Showing 0-0 of 0</span><div class="flex gap-1" id="paginationControls"></div></div></div>
     </main>
     <script src="js/database.js"></script><script src="js/navigation.js"></script><script src="js/dashboard-common.js"></script><script src="js/payslip-generator.js"></script>
     <script>
-        const theme = '#b0303b';
-        let employeeId = null, allPayroll = [], filteredPayroll = [], cutoffs = [], currentPage = 1;
+        const roleType = 'sa', theme = '#b0303b';
+        let employeeId = null, allPayroll = [], filteredPayroll = [], attendanceByPeriod = new Map(), currentPage = 1;
         const itemsPerPage = 10;
         document.addEventListener('DOMContentLoaded', async () => { currentDate.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); await loadEmployeeData(); });
         function money(v) { return 'PHP ' + Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function formatDate(v) { return v ? new Date(v).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'; }
         async function getUser() { if (window.currentUser) return window.currentUser; const r = await fetch('/api/auth/session.php', { credentials: 'include' }).catch(() => null); if (!r || !r.ok) return {}; const d = await r.json(); return d.user || {}; }
-        async function loadEmployeeData() { await Database.ensureDatabaseReady(); const user = await getUser(); userName.textContent = user.full_name || user.username || 'Student Assistant'; const employees = await Database.getAllEmployees(); const employee = employees.find(e => (user.email && e.email === user.email) || (user.employee_id && Number(e.id) === Number(user.employee_id)) || (user.employee_id && String(e.employee_id) === String(user.employee_id))) || employees.find(e => e.assignment === 'sa'); if (!employee) { payslipTableBody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-red-500">Employee record not found</td></tr>'; return; } employeeId = employee.id; await loadPayroll(); }
-        async function loadPayroll() { allPayroll = (await Database.getAllPayroll()).filter(p => Number(p.employee_id) === Number(employeeId)); const periodMap = new Map(); allPayroll.forEach(p => { if (p.period_start && p.period_end) periodMap.set(`${p.period_start}|${p.period_end}`, { key: `${p.period_start}|${p.period_end}`, start: p.period_start, end: p.period_end, label: `${DashboardCommon.formatDate(p.period_start)} - ${DashboardCommon.formatDate(p.period_end)}` }); }); cutoffs = [...periodMap.values()].sort((a,b) => new Date(b.start) - new Date(a.start)); cutoffSelect.innerHTML = '<option value="all">All Periods</option>' + cutoffs.map(c => `<option value="${c.key}">${c.label}</option>`).join(''); filterPayslips(); }
-        function filterPayslips() { const key = cutoffSelect.value; const c = cutoffs.find(x => x.key === key); filteredPayroll = c ? allPayroll.filter(p => p.period_start === c.start && p.period_end === c.end) : [...allPayroll]; selectedPeriodInfo.textContent = c ? `Period: ${c.label}` : 'Showing all payslips'; currentPage = 1; updateStats(); renderTable(); }
-        function updateStats() { const total = filteredPayroll.reduce((s,p) => s + Number(p.net_salary || 0), 0); totalPayslips.textContent = filteredPayroll.length; totalNetPay.textContent = money(total); averagePay.textContent = money(filteredPayroll.length ? total / filteredPayroll.length : 0); }
-        function renderTable() { const start = (currentPage - 1) * itemsPerPage, end = start + itemsPerPage, pageData = filteredPayroll.slice(start, end), totalPages = Math.ceil(filteredPayroll.length / itemsPerPage); payslipTableBody.innerHTML = pageData.length ? pageData.map(p => { const period = p.period_start && p.period_end ? `${DashboardCommon.formatDate(p.period_start)} - ${DashboardCommon.formatDate(p.period_end)}` : (p.period || 'N/A'); const statusClass = p.status === 'Approved' ? 'status-approved' : 'status-pending'; return `<tr class="border-b hover:bg-gray-50"><td class="py-3 px-6 font-medium">${period}</td><td class="py-3">${p.regular_hours || 0}</td><td class="py-3">${p.admin_hours || p.admin_pay || 0}</td><td class="py-3">${money(p.gross_salary)}</td><td class="py-3">${money(p.total_deduction)}</td><td class="py-3 font-medium text-[#b0303b]">${money(p.net_salary)}</td><td class="py-3"><span class="${statusClass}">${p.status || 'Pending'}</span></td><td class="py-3 pr-6 text-right"><button onclick="viewPayslip(${p.id})" class="text-[#b0303b] mr-2"><i class="fa-regular fa-eye"></i></button><button onclick="downloadPayslip(${p.id})" class="text-[#b0303b]"><i class="fa-solid fa-download"></i></button></td></tr>`; }).join('') : '<tr><td colspan="8" class="py-8 text-center text-gray-400">No payslips found</td></tr>'; paginationInfo.textContent = `Showing ${filteredPayroll.length ? start + 1 : 0}-${Math.min(end, filteredPayroll.length)} of ${filteredPayroll.length}`; renderPagination(totalPages); }
-        function renderPagination(totalPages) { if (totalPages <= 1) { paginationControls.innerHTML = ''; return; } let html = ''; for (let i = 1; i <= totalPages; i++) html += `<button class="w-8 h-8 rounded-lg ${i === currentPage ? 'text-white' : 'border'}" style="${i === currentPage ? `background:${theme}` : ''}" onclick="changePage(${i})">${i}</button>`; paginationControls.innerHTML = html; }
-        function changePage(page) { currentPage = page; renderTable(); }
-        function viewPayslip(id) { window.open(`payslip.html?id=${id}`, '_blank'); }
-        async function downloadPayslip(id) { const r = await fetch(`/api/payslip.php?payroll_id=${id}`, { credentials: 'include' }); const result = await r.json(); if (result.success && result.data) await window.payslipGenerator.generatePDF(result.data, result.data.type); else alert('Failed to generate payslip'); }
+        function matchesEmployee(employee, user) { return (user.email && employee.email === user.email) || (user.employee_id && Number(employee.id) === Number(user.employee_id)) || (user.employee_id && String(employee.employee_id) === String(user.employee_id)); }
+        async function loadEmployeeData() {
+            await Database.ensureDatabaseReady();
+            const user = await getUser();
+            userName.textContent = user.full_name || user.username || 'Student Assistant';
+            const employees = await Database.getAllEmployees();
+            const employee = employees.find(e => matchesEmployee(e, user)) || employees.find(e => e.assignment === roleType);
+            if (!employee) { payslipTableBody.innerHTML = '<tr><td colspan="8" class="py-8 text-center text-red-500">Employee record not found</td></tr>'; return; }
+            employeeId = employee.id;
+            await loadAttendanceIndex();
+            await loadPayroll();
+        }
+        async function loadAttendanceIndex() {
+            const periods = await Database.getAttendanceByEmployee(employeeId, roleType);
+            periods.forEach(p => attendanceByPeriod.set(p.period_start + '|' + p.period_end, p));
+        }
+        async function loadPayroll() {
+            allPayroll = (await Database.getAllPayroll()).filter(p => Number(p.employee_id) === Number(employeeId));
+            const periodMap = new Map();
+            allPayroll.forEach(p => { if (p.period_start && p.period_end) periodMap.set(p.period_start + '|' + p.period_end, { start: p.period_start, end: p.period_end, label: formatDate(p.period_start) + ' - ' + formatDate(p.period_end) }); });
+            const options = [...periodMap.entries()].sort((a, b) => new Date(b[1].start) - new Date(a[1].start)).map(([key, p]) => '<option value="' + key + '">' + p.label + '</option>').join('');
+            cutoffSelect.innerHTML = '<option value="all">All Periods</option>' + options;
+            filterPayslips();
+        }
+        function filterPayslips() {
+            const key = cutoffSelect.value;
+            filteredPayroll = key === 'all' ? [...allPayroll] : allPayroll.filter(p => (p.period_start + '|' + p.period_end) === key);
+            selectedPeriodInfo.textContent = key === 'all' ? 'Showing all payslips' : 'Period: ' + cutoffSelect.options[cutoffSelect.selectedIndex].textContent;
+            currentPage = 1;
+            updateStats();
+            renderTable();
+        }
+        function updateStats() { const total = filteredPayroll.reduce((sum, p) => sum + Number(p.net_salary || p.net_pay || 0), 0); totalPayslips.textContent = filteredPayroll.length; totalNetPay.textContent = money(total); averagePay.textContent = money(filteredPayroll.length ? total / filteredPayroll.length : 0); }
+        function metaForPayroll(p) { const attendance = attendanceByPeriod.get((p.period_start || '') + '|' + (p.period_end || '')) || {}; const days = Number(attendance.days_worked || p.regular_hours || 0); const rate = Number(attendance.rate || (days ? Number(p.gross_salary || 0) / days : 0)); return { days, rate }; }
+        function renderTable() {
+            const start = (currentPage - 1) * itemsPerPage, pageData = filteredPayroll.slice(start, start + itemsPerPage), totalPages = Math.ceil(filteredPayroll.length / itemsPerPage);
+            payslipTableBody.innerHTML = pageData.length ? pageData.map(p => { const period = p.period_start && p.period_end ? formatDate(p.period_start) + ' - ' + formatDate(p.period_end) : (p.period || 'N/A'); const statusClass = p.status === 'Approved' ? 'status-approved' : 'status-pending'; const meta = metaForPayroll(p); const tax = Number(p.withholding_tax || p.tax || 0); return '<tr class="border-b hover:bg-gray-50"><td class="py-3 px-6 font-medium">' + period + '</td><td class="py-3">' + money(meta.rate) + '</td><td class="py-3">' + meta.days + '</td><td class="py-3">' + money(p.gross_salary || p.gross_pay) + '</td><td class="py-3">' + money(tax) + '</td><td class="py-3 font-medium text-[#b0303b]">' + money(p.net_salary || p.net_pay) + '</td><td class="py-3"><span class="' + statusClass + '">' + (p.status || 'Pending') + '</span></td><td class="py-3 pr-6 text-right"><button onclick="viewPayslip(' + p.id + ')" class="text-[#b0303b] mr-2"><i class="fa-regular fa-eye"></i></button><button onclick="downloadPayslip(' + p.id + ')" class="text-[#b0303b]"><i class="fa-solid fa-download"></i></button></td></tr>'; }).join('') : '<tr><td colspan="8" class="py-8 text-center text-gray-400">No payslips found</td></tr>';
+            paginationInfo.textContent = 'Showing ' + (filteredPayroll.length ? start + 1 : 0) + '-' + Math.min(start + itemsPerPage, filteredPayroll.length) + ' of ' + filteredPayroll.length;
+            renderPagination(totalPages);
+        }
+        function renderPagination(totalPages) { if (totalPages <= 1) { paginationControls.innerHTML = ''; return; } let html = '<button class="w-8 h-8 rounded-lg border ' + (currentPage === 1 ? 'bg-gray-100 text-gray-400' : '') + '" onclick="changePage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '><i class="fa-solid fa-chevron-left text-xs"></i></button>'; for (let i = 1; i <= totalPages; i++) html += '<button class="w-8 h-8 rounded-lg ' + (i === currentPage ? 'text-white' : 'border') + '" style="' + (i === currentPage ? 'background:' + theme : '') + '" onclick="changePage(' + i + ')">' + i + '</button>'; html += '<button class="w-8 h-8 rounded-lg border ' + (currentPage === totalPages ? 'bg-gray-100 text-gray-400' : '') + '" onclick="changePage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '><i class="fa-solid fa-chevron-right text-xs"></i></button>'; paginationControls.innerHTML = html; }
+        function changePage(page) { const totalPages = Math.ceil(filteredPayroll.length / itemsPerPage); if (page < 1 || page > totalPages) return; currentPage = page; renderTable(); }
+        function viewPayslip(id) { window.open('payslip.html?id=' + id, '_blank'); }
+        async function downloadPayslip(id) { const r = await fetch('/api/payslip.php?payroll_id=' + id, { credentials: 'include' }); const result = await r.json(); if (result.success && result.data) await window.payslipGenerator.generatePDF(result.data, result.data.type); else alert('Failed to generate payslip'); }
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
     </script>
 </body>
 </html>
+

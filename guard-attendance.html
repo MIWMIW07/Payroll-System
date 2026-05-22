@@ -7,113 +7,126 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #dcd3b8; }
         .nav-link.active { background-color: #2c5f2d; color: white; }
-        .stat-card { transition: all .3s ease; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
-        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(44,95,45,.18); }
-        .cutoff-filter { background: white; border-radius: 12px; padding: 16px; margin-bottom: 20px; }
+        .stat-card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }
         .filter-select { padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; }
-        .loading-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-        .spinner { width: 50px; height: 50px; border: 3px solid #f3f3f3; border-top: 3px solid #2c5f2d; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="text-gray-700 antialiased min-h-screen">
-    <nav class="bg-[#1e3a1e] text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 shadow-md">
-        <div class="flex items-center gap-2"><div class="w-8 h-8 bg-[#2c5f2d] rounded-lg flex items-center justify-center"><i class="fa-solid fa-shield-halved text-[#f4e8c1]"></i></div><span class="font-bold text-lg">Philtech GMA - Guard Portal</span></div>
+    <nav class="bg-[#1e3a2f] text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 shadow-md">
+        <div class="flex items-center gap-2"><div class="w-8 h-8 bg-[#2c5f2d] rounded-lg flex items-center justify-center"><i class="fa-solid fa-shield-halved text-[#f4e8c1]"></i></div><span class="font-bold text-lg">Philtech GMA - Security Portal</span></div>
         <div class="hidden md:flex items-center gap-1">
             <a href="dashboard-guard.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#4a7c4a] transition-colors font-medium">Dashboard</a>
             <a href="guard-attendance.html" class="nav-link active px-4 py-2 rounded-lg font-medium">My Attendance</a>
             <a href="guard-payslips.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#4a7c4a] transition-colors font-medium">My Payslips</a>
-            <a href="staff-profile.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#4a7c4a] transition-colors font-medium">Profile</a>
+            <a href="guard-profile.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#4a7c4a] transition-colors font-medium">Profile</a>
         </div>
         <div class="flex items-center gap-3"><span class="text-sm hidden sm:block" id="userName">Guard</span><img src="https://i.pravatar.cc/150?u=guard" class="w-8 h-8 rounded-full border-2 border-white"></div>
     </nav>
-
     <main class="p-6 md:p-8 max-w-7xl mx-auto">
-        <div class="flex justify-between items-center mb-6">
-            <div><h1 class="text-2xl font-bold text-[#1e3a1e]">My Attendance</h1><p class="text-gray-500 text-sm mt-1" id="currentDate"></p></div>
-            <button onclick="window.location.href='dashboard-guard.html'" class="bg-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button>
-        </div>
-        <div class="cutoff-filter"><div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Select Period</label><select id="cutoffSelect" class="filter-select w-full md:w-64" onchange="changeCutoff()"><option value="all">All Periods</option></select></div><div class="text-sm text-gray-500" id="selectedPeriodInfo"></div></div></div>
+        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6"><div><h1 class="text-2xl font-bold text-[#1e3a2f]">My Attendance</h1><p class="text-gray-500 text-sm mt-1" id="currentDate"></p></div><button onclick="window.location.href='dashboard-guard.html'" class="bg-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow flex items-center gap-2"><i class="fa-solid fa-arrow-left"></i> Back to Dashboard</button></div>
+        <div class="bg-white rounded-xl p-4 mb-6"><div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"><div><label class="block text-sm font-medium text-gray-700 mb-1">Select Period</label><select id="cutoffSelect" class="filter-select w-full md:w-72" onchange="changeCutoff()"><option value="all">All Periods</option></select></div><div class="text-sm text-gray-500" id="selectedPeriodInfo"></div></div></div>
         <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div class="stat-card text-center"><p class="text-xs text-gray-500">Days Present</p><p class="text-xl font-bold text-gray-800" id="daysPresent">0</p></div>
+            <div class="stat-card text-center"><p class="text-xs text-gray-500">Days Worked</p><p class="text-xl font-bold text-gray-800" id="daysWorked">0</p></div>
             <div class="stat-card text-center"><p class="text-xs text-gray-500">Total Hours</p><p class="text-xl font-bold text-gray-800" id="totalHours">0</p></div>
-            <div class="stat-card text-center"><p class="text-xs text-gray-500">Overtime</p><p class="text-xl font-bold text-yellow-600" id="totalOvertime">0</p></div>
-            <div class="stat-card text-center"><p class="text-xs text-gray-500">Lates (min)</p><p class="text-xl font-bold text-red-600" id="totalLates">0</p></div>
-            <div class="stat-card text-center"><p class="text-xs text-gray-500">Undertime (hrs)</p><p class="text-xl font-bold text-orange-600" id="undertimeHours">0</p></div>
+            <div class="stat-card text-center"><p class="text-xs text-gray-500">Shift Count</p><p class="text-xl font-bold text-gray-800" id="presentDays">0</p></div>
+            <div class="stat-card text-center"><p class="text-xs text-gray-500">Daily Rate</p><p class="text-xl font-bold text-gray-800" id="dailyRate">PHP 0.00</p></div>
+            <div class="stat-card text-center"><p class="text-xs text-gray-500">Total Earnings</p><p class="text-xl font-bold text-[#2c5f2d]" id="totalPay">PHP 0.00</p></div>
         </div>
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6"><h3 class="font-semibold text-gray-800 mb-4">Guard Duty Trend</h3><div class="h-64"><canvas id="attendanceChart"></canvas></div></div>
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-800">Detailed Records</h3></div>
-            <div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50 text-xs text-gray-500"><tr><th class="py-3 px-6">Date</th><th class="py-3">Day</th><th class="py-3">Hours Worked</th><th class="py-3">Overtime</th><th class="py-3">Lates</th><th class="py-3">Status</th></tr></thead><tbody class="text-sm" id="attendanceTableBody"><tr><td colspan="6" class="py-8 text-center text-gray-400">Loading...</td></tr></tbody></table></div>
+            <div class="px-6 py-4 border-b border-gray-100"><h3 class="font-semibold text-gray-800">Daily Presence Records</h3></div>
+            <div class="overflow-x-auto"><table class="w-full text-left"><thead class="bg-gray-50 text-xs text-gray-500"><tr><th class="py-3 px-6">Date</th><th class="py-3">Day</th><th class="py-3">Present</th><th class="py-3">Rate</th><th class="py-3">Earnings</th></tr></thead><tbody class="text-sm" id="attendanceTableBody"><tr><td colspan="5" class="py-8 text-center text-gray-400">Loading...</td></tr></tbody></table></div>
             <div class="px-6 py-3 border-t border-gray-100 flex justify-between items-center"><span class="text-xs text-gray-400" id="paginationInfo">Showing 0-0 of 0</span><div class="flex gap-1" id="paginationControls"></div></div>
         </div>
     </main>
-    <div id="loadingOverlay" class="loading-overlay" style="display:none"><div class="spinner"></div></div>
     <script src="js/database.js"></script><script src="js/navigation.js"></script><script src="js/dashboard-common.js"></script>
     <script>
-        const theme = '#2c5f2d', dashboardUrl = 'dashboard-guard.html';
-        let employeeId = null, allAttendance = [], filteredAttendance = [], currentPage = 1, cutoffs = [], attendanceChart = null;
+        const roleType = 'guard';
+        const theme = '#2c5f2d';
+        let employeeId = null, allPeriods = [], allRows = [], filteredRows = [], currentPage = 1;
         const itemsPerPage = 10;
-        document.addEventListener('DOMContentLoaded', async () => { document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); await loadEmployeeData(); });
-        async function getUser() { if (window.currentUser) return window.currentUser; const r = await fetch('/api/auth/session.php', { credentials: 'include' }).catch(() => null); if (!r || !r.ok) return {}; const d = await r.json(); return d.user || {}; }
+        document.addEventListener('DOMContentLoaded', async () => { currentDate.textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }); await loadEmployeeData(); });
+        function money(value) { return 'PHP ' + Number(value || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+        function formatDate(value) { return value ? new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'N/A'; }
+        async function getUser() { if (window.currentUser) return window.currentUser; const response = await fetch('/api/auth/session.php', { credentials: 'include' }).catch(() => null); if (!response || !response.ok) return {}; const data = await response.json(); return data.user || {}; }
+        function matchesEmployee(employee, user) { return (user.email && employee.email === user.email) || (user.employee_id && Number(employee.id) === Number(user.employee_id)) || (user.employee_id && String(employee.employee_id) === String(user.employee_id)); }
         async function loadEmployeeData() {
-            DashboardCommon.showLoading(true);
             try {
                 await Database.ensureDatabaseReady();
                 const user = await getUser();
-                document.getElementById('userName').textContent = user.full_name || user.username || 'Guard';
+                userName.textContent = user.full_name || user.username || 'Guard';
                 const employees = await Database.getAllEmployees();
-                const employee = employees.find(e => (user.email && e.email === user.email) || (user.employee_id && Number(e.id) === Number(user.employee_id)) || (user.employee_id && String(e.employee_id) === String(user.employee_id))) || employees.find(e => e.assignment === 'guard');
+                const employee = employees.find(e => matchesEmployee(e, user)) || employees.find(e => e.assignment === roleType);
                 if (!employee) throw new Error('Employee record not found');
                 employeeId = employee.id;
                 await loadAttendance();
             } catch (error) {
-                document.getElementById('attendanceTableBody').innerHTML = `<tr><td colspan="6" class="py-8 text-center text-red-500">${error.message}</td></tr>`;
-            } finally { DashboardCommon.showLoading(false); }
+                attendanceTableBody.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-red-500">' + error.message + '</td></tr>';
+            }
         }
         async function loadAttendance() {
-            allAttendance = await Database.getAttendanceByEmployee(employeeId);
-            cutoffs = DashboardCommon.getAvailableCutoffs(allAttendance);
-            document.getElementById('cutoffSelect').innerHTML = DashboardCommon.renderCutoffFilter(cutoffs, null);
-            applyCutoffFilter(cutoffs[0]?.key || 'all');
+            allPeriods = await Database.getAttendanceByEmployee(employeeId, roleType);
+            renderCutoffOptions();
+            allRows = expandDailyRows(allPeriods);
+            changeCutoff();
         }
-        function changeCutoff() { applyCutoffFilter(document.getElementById('cutoffSelect').value); }
-        function applyCutoffFilter(key) {
-            const cutoff = cutoffs.find(c => c.key === key);
-            filteredAttendance = cutoff ? DashboardCommon.filterAttendanceByCutoff(allAttendance, cutoff.startStr, cutoff.endStr) : [...allAttendance];
-            document.getElementById('selectedPeriodInfo').textContent = cutoff ? `Period: ${cutoff.label}` : 'Showing all records';
-            currentPage = 1; updateStats(); renderTable(); updateChart();
+        function renderCutoffOptions() {
+            const options = allPeriods.slice().sort((a, b) => new Date(b.period_start) - new Date(a.period_start)).map(p => {
+                const key = p.period_start + '|' + p.period_end;
+                return '<option value="' + key + '">' + formatDate(p.period_start) + ' - ' + formatDate(p.period_end) + '</option>';
+            }).join('');
+            cutoffSelect.innerHTML = '<option value="all">All Periods</option>' + options;
+        }
+        function expandDailyRows(periods) {
+            return periods.flatMap(period => Object.entries(period.daily_data || {}).map(([date, present]) => ({
+                date,
+                present: present === true || present === 1 || present === '1' || present === 'true',
+                rate: Number(period.rate || 0),
+                period_start: period.period_start,
+                period_end: period.period_end
+            }))).sort((a, b) => new Date(b.date) - new Date(a.date));
+        }
+        function changeCutoff() {
+            const key = cutoffSelect.value;
+            filteredRows = key === 'all' ? [...allRows] : allRows.filter(row => (row.period_start + '|' + row.period_end) === key);
+            selectedPeriodInfo.textContent = key === 'all' ? 'Showing all records' : 'Period: ' + cutoffSelect.options[cutoffSelect.selectedIndex].textContent;
+            currentPage = 1;
+            updateStats();
+            renderTable();
         }
         function updateStats() {
-            const s = DashboardCommon.calculateAttendanceStats(filteredAttendance);
-            daysPresent.textContent = s.daysPresent; totalHours.textContent = s.totalHours; totalOvertime.textContent = s.totalOvertime; totalLates.textContent = s.totalLates; undertimeHours.textContent = s.undertimeHours;
+            const present = filteredRows.filter(row => row.present);
+            const total = present.reduce((sum, row) => sum + row.rate, 0);
+            const averageRate = present.length ? total / present.length : 0;
+            daysWorked.textContent = present.length;
+            totalHours.textContent = present.length * 8;
+            presentDays.textContent = present.length;
+            dailyRate.textContent = money(averageRate);
+            totalPay.textContent = money(total);
         }
         function renderTable() {
-            const start = (currentPage - 1) * itemsPerPage, end = start + itemsPerPage, pageData = filteredAttendance.slice(start, end), totalPages = Math.ceil(filteredAttendance.length / itemsPerPage);
-            const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-            attendanceTableBody.innerHTML = pageData.length ? pageData.map(a => { const d = new Date(a.attendance_date || a.date); const h = a.hours_worked || a.hours_attended || 0; const ot = a.overtime_hours || a.ot_hours || a.overtime || 0; const late = a.lates || a.late_hours || 0; return `<tr class="border-b hover:bg-gray-50"><td class="py-3 px-6">${DashboardCommon.formatDate(d)}</td><td class="py-3">${days[d.getDay()]}</td><td class="py-3">${h} hrs</td><td class="py-3">${ot} hrs</td><td class="py-3 ${late > 0 ? 'text-red-600 font-medium' : ''}">${late}</td><td class="py-3"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">Present</span></td></tr>`; }).join('') : '<tr><td colspan="6" class="py-8 text-center text-gray-400">No attendance records found</td></tr>';
-            paginationInfo.textContent = `Showing ${filteredAttendance.length ? start + 1 : 0}-${Math.min(end, filteredAttendance.length)} of ${filteredAttendance.length}`;
+            const start = (currentPage - 1) * itemsPerPage;
+            const pageData = filteredRows.slice(start, start + itemsPerPage);
+            const totalPages = Math.ceil(filteredRows.length / itemsPerPage);
+            const dayNames = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+            attendanceTableBody.innerHTML = pageData.length ? pageData.map(row => {
+                const date = new Date(row.date + 'T00:00:00');
+                const badge = row.present ? '<span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Present</span>' : '<span class="px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-500">Absent</span>';
+                return '<tr class="border-b hover:bg-gray-50"><td class="py-3 px-6 font-medium">' + formatDate(row.date) + '</td><td class="py-3">' + dayNames[date.getDay()] + '</td><td class="py-3">' + badge + '</td><td class="py-3">' + money(row.rate) + '</td><td class="py-3 font-medium text-[#2c5f2d]">' + money(row.present ? row.rate : 0) + '</td></tr>';
+            }).join('') : '<tr><td colspan="5" class="py-8 text-center text-gray-400">No attendance records found</td></tr>';
+            paginationInfo.textContent = 'Showing ' + (filteredRows.length ? start + 1 : 0) + '-' + Math.min(start + itemsPerPage, filteredRows.length) + ' of ' + filteredRows.length;
             renderPagination(totalPages);
         }
         function renderPagination(totalPages) {
             if (totalPages <= 1) { paginationControls.innerHTML = ''; return; }
-            let html = `<button class="w-8 h-8 rounded-lg border ${currentPage === 1 ? 'bg-gray-100 text-gray-400' : ''}" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}><i class="fa-solid fa-chevron-left text-xs"></i></button>`;
-            for (let i = 1; i <= totalPages; i++) html += `<button class="w-8 h-8 rounded-lg ${i === currentPage ? 'text-white' : 'border'}" style="${i === currentPage ? `background:${theme}` : ''}" onclick="changePage(${i})">${i}</button>`;
-            html += `<button class="w-8 h-8 rounded-lg border ${currentPage === totalPages ? 'bg-gray-100 text-gray-400' : ''}" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}><i class="fa-solid fa-chevron-right text-xs"></i></button>`;
+            let html = '<button class="w-8 h-8 rounded-lg border ' + (currentPage === 1 ? 'bg-gray-100 text-gray-400' : '') + '" onclick="changePage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '><i class="fa-solid fa-chevron-left text-xs"></i></button>';
+            for (let i = 1; i <= totalPages; i++) html += '<button class="w-8 h-8 rounded-lg ' + (i === currentPage ? 'text-white' : 'border') + '" style="' + (i === currentPage ? 'background:' + theme : '') + '" onclick="changePage(' + i + ')">' + i + '</button>';
+            html += '<button class="w-8 h-8 rounded-lg border ' + (currentPage === totalPages ? 'bg-gray-100 text-gray-400' : '') + '" onclick="changePage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '><i class="fa-solid fa-chevron-right text-xs"></i></button>';
             paginationControls.innerHTML = html;
         }
-        function changePage(page) { const totalPages = Math.ceil(filteredAttendance.length / itemsPerPage); if (page < 1 || page > totalPages) return; currentPage = page; renderTable(); }
-        function updateChart() {
-            const ctx = attendanceChart ? null : document.getElementById('attendanceChart').getContext('2d');
-            const weeks = ['Week 1','Week 2','Week 3','Week 4'], weeklyHours = [0,0,0,0];
-            filteredAttendance.forEach(a => { const d = new Date(a.attendance_date || a.date); const i = Math.floor((d.getDate() - 1) / 7); if (i >= 0 && i < 4) weeklyHours[i] += Number(a.hours_worked || a.hours_attended || 0); });
-            if (attendanceChart) attendanceChart.destroy();
-            attendanceChart = new Chart(ctx || document.getElementById('attendanceChart').getContext('2d'), { type: 'bar', data: { labels: weeks, datasets: [{ label: 'Hours Worked', data: weeklyHours, backgroundColor: theme, borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-        }
+        function changePage(page) { const totalPages = Math.ceil(filteredRows.length / itemsPerPage); if (page < 1 || page > totalPages) return; currentPage = page; renderTable(); }
         function logout() { localStorage.clear(); window.location.href = 'index.html'; }
     </script>
 </body>
