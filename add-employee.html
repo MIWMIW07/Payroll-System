@@ -326,6 +326,7 @@
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
             await ensureCurrentUserRole();
+            updateUserNameDisplay();
             updateNavigationForRole();
             toggleAssignmentFields();
         });
@@ -345,7 +346,11 @@
                 if (data.authenticated && data.user?.role) {
                     localStorage.setItem('userRole', data.user.role);
                     sessionStorage.setItem('userRole', data.user.role);
+                    const displayName = data.user.full_name || data.user.username || data.user.role || 'User';
+                    localStorage.setItem('userName', displayName);
+                    sessionStorage.setItem('userName', displayName);
                     window.userRole = data.user.role;
+                    window.userName = displayName;
                 }
             } catch (error) {
                 console.warn('Could not load current user role:', error);
@@ -354,6 +359,17 @@
 
         function getCurrentUserRole() {
             return window.userRole || localStorage.getItem('userRole') || sessionStorage.getItem('userRole') || '';
+        }
+
+        function getCurrentUserName() {
+            return window.userName || localStorage.getItem('userName') || sessionStorage.getItem('userName') || getCurrentUserRole() || 'User';
+        }
+
+        function updateUserNameDisplay() {
+            const userNameElement = document.getElementById('userName');
+            if (userNameElement) {
+                userNameElement.textContent = getCurrentUserName();
+            }
         }
 
         function getEmployeesPageForCurrentRole() {

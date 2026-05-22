@@ -242,6 +242,9 @@ async function checkAuth() {
     try {
         localStorage.setItem('userRole', user.role);
         sessionStorage.setItem('userRole', user.role);
+        const displayName = user.full_name || user.username || user.role || 'User';
+        localStorage.setItem('userName', displayName);
+        sessionStorage.setItem('userName', displayName);
     } catch (e) {
         console.warn('User role storage not available');
     }

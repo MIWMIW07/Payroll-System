@@ -8,6 +8,9 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 localStorage.setItem('userRole', user.role);
                 sessionStorage.setItem('userRole', user.role);
+                const displayName = user.full_name || user.username || user.role || 'User';
+                localStorage.setItem('userName', displayName);
+                sessionStorage.setItem('userName', displayName);
             } catch (e) {
                 console.warn('User role storage not available');
             }
@@ -127,6 +130,9 @@ async function handleLogin(username, password, rememberMe) {
                 localStorage.setItem('payroll_session_time', Date.now().toString());
                 localStorage.setItem('userRole', data.user.role);
                 sessionStorage.setItem('userRole', data.user.role);
+                const displayName = data.user.full_name || data.user.username || data.user.role || 'User';
+                localStorage.setItem('userName', displayName);
+                sessionStorage.setItem('userName', displayName);
             } catch (e) {
                 // Storage might be disabled
                 console.warn('Session storage not available');
