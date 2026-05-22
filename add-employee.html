@@ -392,6 +392,45 @@
             }
         });
 
+        // After successfully adding employee, create a user account
+        async function createUserForEmployee(employee, password) {
+            const userData = {
+                username: employee.email.split('@')[0], // Use email prefix as username
+                password_hash: password || 'password123', // Default password
+                full_name: employee.full_name,
+                email: employee.email,
+                role: mapAssignmentToRole(employee.assignment),
+                status: 'Active',
+                linked_employee: employee.id
+            };
+            
+            const response = await fetch('/api/users.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(userData)
+            });
+            
+            return response.json();
+        }
+
+        function mapAssignmentToRole(assignment) {
+            switch(assignment) {
+                case 'shs_only':
+                case 'college_only':
+                case 'both':
+                    return 'teacher';
+                case 'admin':
+                    return 'accountant';
+                case 'guard':
+                    return 'guard';
+                case 'sa':
+                    return 'sa';
+                default:
+                    return 'teacher';
+            }
+        }
+
         function goBack() {
             window.location.href = 'employeesSadmin.html';
         }
