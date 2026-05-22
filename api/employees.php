@@ -5,66 +5,150 @@ require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/middleware/auth.php';
 
 require_auth();
-$user = $_SESSION['user'];
 
-// Only superadmin and accountant can modify employees (POST/PUT/DELETE)
+// Only superadmin and accountant can modify employees
 if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
     requireRole(['superadmin', 'accountant']);
 }
 
-// Load SecureDatabase model
-require_once __DIR__ . '/models/SecureDatabase.php';
+header('Content-Type: application/json');
 
 try {
-    $db = new SecureDatabase();
+    $pdo = bootstrapGetPdo('require');
     
     switch ($_SERVER['REQUEST_METHOD']) {
         case 'GET':
-            $employees = $db->getAllEmployees();
+            $stmt = $pdo->query("SELECT * FROM employees ORDER BY id DESC");
+            $employees = $stmt->fetchAll(PDO::FETCH_ASSOC);
             echo json_encode($employees ?: []);
             break;
         
         case 'POST':
-            $data = json_decode(file_get_contents("php://input"), true);
+            // Get raw input and decode
+            $rawInput = file_get_contents("php://input");
+            error_log("EMPLOYEE POST - Raw input: " . $rawInput);
             
-            // Build insert query with all fields
-            $fields = [];
-            $values = [];
-            $params = [];
+            $data = json_decode($rawInput, true);
             
+            if (!$data) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Invalid JSON data received', 'raw' => $rawInput]);
+                break;
+            }
+            
+            error_log("EMPLOYEE POST - Decoded data: " . print_r($data, true));
+            
+            // Validate required fields
+            if (empty($data['full_name'])) {
+                http_response_code(400);
+                echo json_encode(['error' => 'Full name is required']);
+                break;
+            }
+            
+            // Prepare insert statement with all possible fields
             $allowedFields = [
                 'full_name', 'email', 'phone', 'birth_date', 'position', 'department',
                 'employment_type', 'hire_date', 'status', 'base_salary', 'hourly_rate',
                 'admin_pay_rate', 'assignment', 'rate_shs', 'rate_college', 'rate_admin',
                 'rate_guard', 'rate_sa', 'subjects_shs', 'subjects_college', 'admin_position',
-                'sss', 'philhealth', 'pagibig', 'tin', 'emergency_name', 'emergency_relation', 'emergency_phone'
+                'sss', 'philhealth', 'pagibig', 'tin', 'emergency_name', 'emergency_relation', 
+                'emergency_phone', 'hours_worked', 'days_worked'
             ];
             
+            $fields = [];
+            $placeholders = [];
+            $params = [];
+            
             foreach ($allowedFields as $field) {
-                if (isset($data[$field])) {
+                if (isset($data[$field]) && $data[$field] !== '' && $data[$field] !== null) {
                     $fields[] = $field;
-                    $values[] = ":$field";
-                    $params[$field] = is_array($data[$field]) ? json_encode($data[$field]) : $data[$field];
+                    $placeholders[] = ":$field";
+                    
+                    // Handle array fields (JSON encode them)
+                    if (is_array($data[$field])) {
+                        $params[$field] = json_encode($data[$field]);
+                    } else {
+                        $params[$field] = $data[$field];
+                    }
                 }
             }
             
-            $sql = "INSERT INTO employees (" . implode(', ', $fields) . ") VALUES (" . implode(', ', $values) . ") RETURNING id";
+            // Add created_at and updated_at
+            $fields[] = 'created_at';
+            $placeholders[] = 'NOW()';
+            $fields[] = 'updated_at';
+            $placeholders[] = 'NOW()';
+            
+            if (empty($fields)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'No valid fields to insert']);
+                break;
+            }
+            
+            $sql = "INSERT INTO employees (" . implode(', ', $fields) . ") 
+                    VALUES (" . implode(', ', $placeholders) . ") 
+                    RETURNING id";
+            
+            error_log("EMPLOYEE POST - SQL: " . $sql);
+            error_log("EMPLOYEE POST - Params: " . print_r($params, true));
+            
             $stmt = $pdo->prepare($sql);
             $stmt->execute($params);
-            $id = $stmt->fetchColumn();
+            $newId = $stmt->fetchColumn();
             
-            echo json_encode(['success' => true, 'id' => $id]);
+            echo json_encode([
+                'success' => true, 
+                'id' => $newId,
+                'message' => 'Employee added successfully'
+            ]);
             break;
         
         case 'PUT':
             $data = json_decode(file_get_contents("php://input"), true);
-            if (!isset($data['id'])) {
+            if (empty($data['id'])) {
                 http_response_code(400);
                 echo json_encode(['error' => 'Employee ID required']);
                 break;
             }
-            $result = $db->updateEmployee((int)$data['id'], $data);
-            echo json_encode(['success' => true]);
+            
+            // Build update query dynamically
+            $allowedFields = [
+                'full_name', 'position', 'department', 'employment_type', 'base_salary',
+                'hourly_rate', 'admin_pay_rate', 'email', 'phone', 'birth_date', 'hire_date',
+                'status', 'assignment', 'rate_shs', 'rate_college', 'rate_admin',
+                'rate_guard', 'rate_sa', 'subjects_shs', 'subjects_college',
+                'sss', 'philhealth', 'pagibig', 'tin', 'emergency_name', 
+                'emergency_relation', 'emergency_phone'
+            ];
+            
+            $updates = [];
+            $params = [];
+            
+            foreach ($allowedFields as $field) {
+                if (isset($data[$field])) {
+                    $updates[] = "$field = :$field";
+                    if (is_array($data[$field])) {
+                        $params[$field] = json_encode($data[$field]);
+                    } else {
+                        $params[$field] = $data[$field];
+                    }
+                }
+            }
+            
+            if (empty($updates)) {
+                http_response_code(400);
+                echo json_encode(['error' => 'No fields to update']);
+                break;
+            }
+            
+            $updates[] = "updated_at = NOW()";
+            $params['id'] = $data['id'];
+            
+            $sql = "UPDATE employees SET " . implode(', ', $updates) . " WHERE id = :id";
+            $stmt = $pdo->prepare($sql);
+            $stmt->execute($params);
+            
+            echo json_encode(['success' => true, 'message' => 'Employee updated']);
             break;
         
         case 'DELETE':
@@ -74,18 +158,25 @@ try {
                 echo json_encode(['error' => 'Employee ID required']);
                 break;
             }
-            $result = $db->deleteEmployee((int)$id);
-            echo json_encode(['success' => true, 'deleted' => $result]);
+            
+            $stmt = $pdo->prepare("DELETE FROM employees WHERE id = :id");
+            $stmt->execute([':id' => $id]);
+            
+            echo json_encode(['success' => true, 'message' => 'Employee deleted']);
             break;
         
         default:
             http_response_code(405);
             echo json_encode(['error' => 'Method not allowed']);
     }
-} catch (Exception $e) {
+    
+} catch (PDOException $e) {
+    error_log("EMPLOYEES API ERROR: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['error' => 'Database error: ' . $e->getMessage()]);
-} catch (Throwable $t) {
+} catch (Exception $e) {
+    error_log("EMPLOYEES API ERROR: " . $e->getMessage());
     http_response_code(500);
-    echo json_encode(['error' => 'Unexpected error: ' . $t->getMessage()]);
+    echo json_encode(['error' => 'Server error: ' . $e->getMessage()]);
 }
+?>
