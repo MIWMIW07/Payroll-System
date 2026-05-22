@@ -25,22 +25,23 @@
     <nav class="bg-[#8a1f27] text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 shadow-md">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-[#b0303b] rounded-lg flex items-center justify-center">
-                <i class="fa-solid fa-chalkboard-user text-[#f4e8c1]"></i>
+                <i class="fa-regular fa-calendar-check text-[#f4e8c1]"></i>
             </div>
-            <span class="font-bold text-lg">Philtech GMA - Teacher Portal</span>
+            <span class="font-bold text-lg">Philtech GMA</span>
         </div>
         <div class="hidden md:flex items-center gap-1">
-            <a href="teacher-dashboard.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Dashboard</a>
-            <a href="teacher-payslips.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">My Payslips</a>
-            <a href="teacher-attendance.html" class="nav-link active px-4 py-2 rounded-lg bg-[#b0303b] text-white font-medium">My Attendance</a>
-            <a href="teacher-profile.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">My Profile</a>
+            <a href="dashboard-staff.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Dashboard</a>
+            <a href="my-attendance.html" class="nav-link active px-4 py-2 rounded-lg bg-[#b0303b] text-white font-medium">My Attendance</a>
+            <a href="my-payslips.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">My Payslips</a>
+            <a href="profile.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#d98989] transition-colors font-medium">Profile</a>
         </div>
         <div class="flex items-center gap-3">
-            <span class="text-sm hidden sm:block" id="userName">Teacher</span>
+            <span class="text-sm hidden sm:block" id="userName">Employee</span>
             <div class="relative group">
-                <img src="https://i.pravatar.cc/150?u=teacher" class="w-8 h-8 rounded-full border-2 border-white cursor-pointer">
+                <img src="https://i.pravatar.cc/150?u=employee" id="profileImage" class="w-8 h-8 rounded-full border-2 border-white cursor-pointer">
                 <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 hidden group-hover:block z-50">
-                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                    <a href="#" onclick="changePassword()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Change Password</a>
+                    <hr class="my-1">
                     <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
                 </div>
             </div>
@@ -54,7 +55,7 @@
                 <h1 class="text-2xl font-bold text-[#8a1f27]">My Attendance</h1>
                 <p class="text-gray-500 text-sm mt-1" id="currentDate"></p>
             </div>
-            <button onclick="window.location.href='teacher-dashboard.html'" class="bg-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow flex items-center gap-2">
+            <button onclick="window.location.href='dashboard-staff.html'" class="bg-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow flex items-center gap-2">
                 <i class="fa-solid fa-arrow-left"></i> Back to Dashboard
             </button>
         </div>
@@ -79,7 +80,7 @@
                 <p class="text-xl font-bold text-gray-800" id="daysPresent">0</p>
             </div>
             <div class="stat-card text-center">
-                <p class="text-xs text-gray-500">Teaching Hours</p>
+                <p class="text-xs text-gray-500">Total Hours</p>
                 <p class="text-xl font-bold text-gray-800" id="totalHours">0</p>
             </div>
             <div class="stat-card text-center">
@@ -98,7 +99,7 @@
 
         <!-- Attendance Chart -->
         <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6">
-            <h3 class="font-semibold text-gray-800 mb-4">Weekly Teaching Hours</h3>
+            <h3 class="font-semibold text-gray-800 mb-4">Attendance Trend</h3>
             <div class="h-64">
                 <canvas id="attendanceChart"></canvas>
             </div>
@@ -118,12 +119,11 @@
                             <th class="py-3">Hours Worked</th>
                             <th class="py-3">Overtime</th>
                             <th class="py-3">Lates (min)</th>
-                            <th class="py-3">Pay Type</th>
                             <th class="py-3">Status</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm" id="attendanceTableBody">
-                        <tr><td colspan="7" class="py-8 text-center text-gray-400">Loading...</td></tr>
+                        <tr><td colspan="6" class="py-8 text-center text-gray-400">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -151,26 +151,29 @@
 
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-            await loadTeacherData();
+            await loadEmployeeData();
         });
 
-        async function loadTeacherData() {
+        async function loadEmployeeData() {
             DashboardCommon.showLoading(true);
             try {
                 await Database.ensureDatabaseReady();
                 
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
-                document.getElementById('userName').textContent = user.full_name || user.username || 'Teacher';
+                document.getElementById('userName').textContent = user.full_name || user.username || 'Employee';
                 
                 const employees = await Database.getAllEmployees();
-                const teacherEmployee = employees.find(e => e.email === user.email || e.employee_id === user.employee_id) || employees[0];
+                const employee = employees.find(e => e.email === user.email || e.employee_id === user.employee_id) || employees[0];
                 
-                if (teacherEmployee) {
-                    employeeId = teacherEmployee.id;
+                if (employee) {
+                    employeeId = employee.id;
                     await loadAttendance();
+                } else {
+                    document.getElementById('attendanceTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Employee record not found</td></tr>';
                 }
             } catch (error) {
-                console.error('Error loading teacher:', error);
+                console.error('Error loading employee:', error);
+                document.getElementById('attendanceTableBody').innerHTML = '<tr><td colspan="6" class="py-8 text-center text-red-500">Error loading data</td></tr>';
             } finally {
                 DashboardCommon.showLoading(false);
             }
@@ -181,11 +184,14 @@
             
             allAttendance = await Database.getAttendanceByEmployee(employeeId);
             
+            // Get available cutoffs
             cutoffs = DashboardCommon.getAvailableCutoffs(allAttendance);
             
+            // Populate cutoff dropdown
             const cutoffSelect = document.getElementById('cutoffSelect');
             cutoffSelect.innerHTML = DashboardCommon.renderCutoffFilter(cutoffs, null);
             
+            // Set default to current cutoff if exists
             const currentCutoffPeriod = DashboardCommon.getCurrentCutoff();
             const matchingCutoff = cutoffs.find(c => 
                 c.startStr === currentCutoffPeriod.startStr && c.endStr === currentCutoffPeriod.endStr
@@ -247,14 +253,13 @@
             
             const tbody = document.getElementById('attendanceTableBody');
             if (pageData.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="py-8 text-center text-gray-400">No attendance records found</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-400">No attendance records found</td></tr>';
             } else {
                 tbody.innerHTML = pageData.map(a => {
                     const date = new Date(a.attendance_date || a.date);
                     const hours = a.hours_worked || a.hours_attended || 0;
                     const overtime = a.overtime_hours || a.ot_hours || 0;
                     const lates = a.lates || a.late_hours || 0;
-                    const payType = a.pay_type || 'Regular';
                     
                     return `
                         <tr class="border-b hover:bg-gray-50">
@@ -263,7 +268,6 @@
                             <td class="py-3">${hours} hrs</td>
                             <td class="py-3">${overtime} hrs</td>
                             <td class="py-3 ${lates > 0 ? 'text-red-600 font-medium' : ''}">${lates}</td>
-                            <td class="py-3"><span class="px-2 py-1 bg-[#b0303b]/10 text-[#b0303b] rounded-full text-xs">${payType}</span></td>
                             <td class="py-3"><span class="px-2 py-1 rounded-full text-xs bg-green-100 text-green-600">Present</span></td>
                         </tr>
                     `;
@@ -305,6 +309,7 @@
         function updateChart() {
             const ctx = document.getElementById('attendanceChart').getContext('2d');
             
+            // Group by week
             const weeks = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
             const weeklyHours = [0, 0, 0, 0];
             
@@ -324,7 +329,7 @@
                 data: {
                     labels: weeks,
                     datasets: [{
-                        label: 'Teaching Hours',
+                        label: 'Hours Worked',
                         data: weeklyHours,
                         backgroundColor: '#b0303b',
                         borderRadius: 6
@@ -336,6 +341,10 @@
                     plugins: { legend: { display: false } }
                 }
             });
+        }
+
+        function changePassword() {
+            window.location.href = 'change-password.html';
         }
 
         function logout() {

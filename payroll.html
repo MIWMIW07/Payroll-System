@@ -436,7 +436,14 @@
                             <td class="py-3 font-medium text-[#b0303b]">₱${parseFloat(p.net_salary || 0).toLocaleString()}</td>
                             <td class="py-3"><span class="${statusClass}">${p.status}</span></td>
                             <td class="py-3 text-center">
-                                ${p.status === 'Approved' ? `<button onclick="downloadPayslip(${p.id})" class="download-btn"><i class="fa-solid fa-download"></i></button>` : ''}
+                                <div class="flex items-center justify-center gap-2">
+                                    ${p.status === 'Approved' ? 
+                                        `<button onclick="generatePayslip(${p.id})" class="bg-[#b0303b] text-white px-3 py-1 rounded-lg text-xs hover:bg-[#8a1f27] transition-colors">
+                                            <i class="fa-regular fa-file-invoice mr-1"></i>Payslip
+                                        </button>` : 
+                                        `<span class="text-gray-400 text-xs">Awaiting Approval</span>`
+                                    }
+                                </div>
                             </td>
                         </tr>`;
                 }).join('');
@@ -489,6 +496,12 @@
         document.getElementById('currentDate').textContent = formatToday();
         setupLiveRefresh();
         loadData();
+
+        // Add to the existing script section in payroll.html
+        window.generatePayslip = function(payrollId) {
+            window.open(`payslip.html?id=${payrollId}`, '_blank');
+        };
+
     </script>
 </body>
 </html>

@@ -7,49 +7,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Security Scripts -->
-    <script src="js/csrf.js"></script>
-    <script src="js/xss-protection.js"></script>
-    <script src="js/secure-ajax.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #dcd3b8; }
-        .nav-link.active { background-color: #b0303b; color: white; }
-        .stat-card {
-            transition: all 0.3s ease;
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(176, 48, 59, 0.2);
-        }
-        .welcome-banner {
-            background: linear-gradient(135deg, #2c5f2d 0%, #1e3a1e 100%);
-            border-radius: 24px;
-            padding: 32px;
-            color: white;
-        }
-        .info-card {
-            background: white;
-            border-radius: 16px;
-            padding: 20px;
-            border-left: 4px solid #2c5f2d;
-        }
-        .shift-badge {
-            background: #fef3c7;
-            color: #92400e;
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 0.75rem;
-            font-weight: 500;
-        }
+        .nav-link.active { background-color: #2c5f2d; color: white; }
+        .stat-card { transition: all 0.3s ease; background: white; border-radius: 16px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px -5px rgba(44,95,45,0.15); }
+        .welcome-banner { background: linear-gradient(135deg, #2c5f2d 0%, #1e3a1e 100%); border-radius: 24px; padding: 32px; color: white; }
+        .cutoff-selector { background: white; border-radius: 12px; padding: 16px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .cutoff-select { padding: 8px 16px; border: 1px solid #e5e7eb; border-radius: 8px; background: white; }
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 1000; backdrop-filter: blur(4px); }
+        .spinner { width: 50px; height: 50px; border: 3px solid #f3f3f3; border-top: 3px solid #2c5f2d; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body class="text-gray-700 antialiased min-h-screen">
 
-    <!-- Top Navigation Bar - Guard Only -->
     <nav class="bg-[#1e3a1e] text-white px-6 py-3 flex justify-between items-center sticky top-0 z-50 shadow-md">
         <div class="flex items-center gap-2">
             <div class="w-8 h-8 bg-[#2c5f2d] rounded-lg flex items-center justify-center">
@@ -57,20 +29,17 @@
             </div>
             <span class="font-bold text-lg">Philtech GMA</span>
         </div>
-        
         <div class="hidden md:flex items-center gap-1">
             <a href="dashboard-guard.html" class="nav-link active px-4 py-2 rounded-lg bg-[#2c5f2d] text-white font-medium">Dashboard</a>
             <a href="my-attendance.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#4a7c4a] transition-colors font-medium">My Attendance</a>
             <a href="my-payslips.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#4a7c4a] transition-colors font-medium">My Payslips</a>
             <a href="profile.html" class="nav-link px-4 py-2 rounded-lg hover:bg-[#4a7c4a] transition-colors font-medium">Profile</a>
         </div>
-        
         <div class="flex items-center gap-3">
             <span class="text-sm hidden sm:block" id="userName">Guard</span>
             <div class="relative group">
                 <img src="https://i.pravatar.cc/150?u=guard" id="profileImage" class="w-8 h-8 rounded-full border-2 border-white cursor-pointer">
                 <div class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 hidden group-hover:block z-50">
-                    <a href="profile.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Profile</a>
                     <a href="#" onclick="changePassword()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Change Password</a>
                     <hr class="my-1">
                     <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-red-600 hover:bg-gray-100">Logout</a>
@@ -79,10 +48,8 @@
         </div>
     </nav>
 
-    <!-- Main Content -->
     <main class="p-6 md:p-8 max-w-7xl mx-auto">
         
-        <!-- Welcome Banner -->
         <div class="welcome-banner mb-8">
             <div class="flex justify-between items-center">
                 <div>
@@ -96,16 +63,18 @@
             </div>
         </div>
 
-        <!-- Current Shift Info -->
-        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-8">
-            <div class="flex items-center justify-between">
-                <div>
-                    <span class="text-sm text-gray-500">Current Shift</span>
-                    <h3 class="text-xl font-bold text-gray-800" id="currentShift">Day Shift</h3>
-                    <p class="text-sm text-gray-500 mt-1" id="shiftHours">6:00 AM - 2:00 PM</p>
-                </div>
-                <div class="shift-badge" id="shiftStatus">On Duty</div>
+        <!-- Cut-off Selector -->
+        <div class="cutoff-selector">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Select Period</label>
+                <select id="cutoffSelect" class="cutoff-select" onchange="changeCutoff()">
+                    <option value="all">All Periods</option>
+                </select>
             </div>
+            <div class="text-sm text-gray-500" id="selectedPeriodInfo"></div>
+            <button onclick="window.location.href='my-attendance.html'" class="bg-[#2c5f2d] text-white px-4 py-2 rounded-lg text-sm hover:bg-[#1e3a1e] transition-colors">
+                View Full Attendance →
+            </button>
         </div>
 
         <!-- Stats Cards -->
@@ -118,7 +87,7 @@
                     <span class="text-sm font-medium text-gray-500">Days Worked</span>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800" id="daysWorked">0</h2>
-                <p class="text-xs text-gray-500 mt-2">This month</p>
+                <p class="text-xs text-gray-500 mt-2">This cut-off</p>
             </div>
             
             <div class="stat-card">
@@ -129,7 +98,7 @@
                     <span class="text-sm font-medium text-gray-500">Total Hours</span>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800" id="totalHours">0</h2>
-                <p class="text-xs text-gray-500 mt-2">This month</p>
+                <p class="text-xs text-gray-500 mt-2">This cut-off</p>
             </div>
             
             <div class="stat-card">
@@ -151,13 +120,13 @@
                     <span class="text-sm font-medium text-gray-500">Attendance Rate</span>
                 </div>
                 <h2 class="text-2xl font-bold text-gray-800" id="attendanceRate">0%</h2>
-                <p class="text-xs text-gray-500 mt-2">This month</p>
+                <p class="text-xs text-gray-500 mt-2">This cut-off</p>
             </div>
         </div>
 
         <!-- Quick Links -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <a href="my-attendance.html" class="info-card hover:shadow-lg transition-shadow">
+            <a href="my-attendance.html" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
                     <i class="fa-regular fa-clock text-2xl text-[#2c5f2d]"></i>
                     <h3 class="font-semibold text-gray-800">Time In/Out</h3>
@@ -166,7 +135,7 @@
                 <span class="text-[#2c5f2d] text-sm mt-3 inline-block">View Details →</span>
             </a>
             
-            <a href="my-payslips.html" class="info-card hover:shadow-lg transition-shadow">
+            <a href="my-payslips.html" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
                     <i class="fa-solid fa-file-invoice-dollar text-2xl text-[#2c5f2d]"></i>
                     <h3 class="font-semibold text-gray-800">My Payslips</h3>
@@ -175,7 +144,7 @@
                 <span class="text-[#2c5f2d] text-sm mt-3 inline-block">View Details →</span>
             </a>
             
-            <a href="profile.html" class="info-card hover:shadow-lg transition-shadow">
+            <a href="profile.html" class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition-shadow">
                 <div class="flex items-center gap-3 mb-2">
                     <i class="fa-regular fa-user text-2xl text-[#2c5f2d]"></i>
                     <h3 class="font-semibold text-gray-800">My Profile</h3>
@@ -211,98 +180,146 @@
         </div>
     </main>
 
+    <div id="loadingOverlay" class="loading-overlay" style="display: none;"><div class="spinner"></div></div>
+
     <script src="js/database.js"></script>
     <script src="js/navigation.js"></script>
+    <script src="js/dashboard-common.js"></script>
     <script>
         let employeeId = null;
-        
-        // Set current date
-        document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { 
-            month: 'long', day: 'numeric', year: 'numeric' 
+        let allAttendance = [];
+        let cutoffs = [];
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+            await loadGuardData();
         });
-        
-        // Get logged in user
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        employeeId = user.linked_employee || localStorage.getItem('employeeId');
-        
-        document.getElementById('userName').textContent = user.name || 'Guard';
-        document.getElementById('welcomeName').textContent = `Welcome, ${user.name || 'Guard'}!`;
-        
-        // Load dashboard data
-        async function loadDashboardData() {
+
+        async function loadGuardData() {
+            DashboardCommon.showLoading(true);
             try {
                 await Database.ensureDatabaseReady();
                 
-                // Get employee data
-                let employee = null;
-                if (employeeId) {
-                    employee = await Database.getEmployeeById(employeeId);
-                }
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                document.getElementById('userName').textContent = user.full_name || user.username || 'Guard';
+                document.getElementById('welcomeName').textContent = `Welcome, ${user.full_name || 'Guard'}!`;
+                
+                const employees = await Database.getAllEmployees();
+                const employee = employees.find(e => e.email === user.email || e.employee_id === user.employee_id) || employees[0];
                 
                 if (employee) {
-                    // Set monthly salary (433/day * 22 days)
+                    employeeId = employee.id;
+                    
                     const dailyRate = employee.rate_guard || 433;
                     const monthlySalary = dailyRate * 22;
-                    document.getElementById('monthlySalary').textContent = '₱' + monthlySalary.toLocaleString();
+                    document.getElementById('monthlySalary').textContent = DashboardCommon.formatMoney(monthlySalary);
+                    
+                    await loadAttendance();
+                    await populateCutoffs();
                 }
-                
-                // Get attendance records
-                const attendance = await Database.getAttendanceByEmployee(employeeId);
-                const currentMonth = new Date().getMonth();
-                const currentYear = new Date().getFullYear();
-                
-                const monthAttendance = attendance.filter(a => {
-                    const date = new Date(a.date);
-                    return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-                });
-                
-                const daysWorked = monthAttendance.length;
-                const totalHours = monthAttendance.reduce((sum, a) => sum + (a.hours_attended || 0), 0);
-                const attendanceRate = daysWorked > 0 ? Math.round((daysWorked / 22) * 100) : 0;
-                
-                document.getElementById('daysWorked').textContent = daysWorked;
-                document.getElementById('totalHours').textContent = totalHours.toFixed(1);
-                document.getElementById('attendanceRate').textContent = attendanceRate + '%';
-                
-                // Recent attendance (last 7 days)
-                const recentAttendance = [...attendance].reverse().slice(0, 7);
-                const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-                
-                const tbody = document.getElementById('recentAttendance');
-                if (recentAttendance.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="py-8 text-center text-gray-400">No attendance records found</td></tr>';
-                } else {
-                    tbody.innerHTML = recentAttendance.map(a => {
-                        const date = new Date(a.date);
-                        return `
-                            <tr class="border-b hover:bg-gray-50">
-                                <td class="py-3 px-6">${date.toLocaleDateString()}</td>
-                                <td class="py-3">${days[date.getDay()]}</td>
-                                <td class="py-3">${a.time_in || '—'}</td>
-                                <td class="py-3">${a.time_out || '—'}</td>
-                                <td class="py-3">${a.hours_attended || 0}</td>
-                                <td class="py-3"><span class="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">Present</span></td>
-                            </tr>
-                        `;
-                    }).join('');
-                }
-                
             } catch (error) {
-                console.error('Error loading dashboard:', error);
+                console.error('Error loading guard:', error);
+            } finally {
+                DashboardCommon.showLoading(false);
             }
         }
-        
+
+        async function loadAttendance() {
+            if (!employeeId) return;
+            allAttendance = await Database.getAttendanceByEmployee(employeeId);
+            
+            // Recent attendance (last 7 days)
+            const recentAttendance = [...allAttendance].reverse().slice(0, 7);
+            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            
+            const tbody = document.getElementById('recentAttendance');
+            if (recentAttendance.length === 0) {
+                tbody.innerHTML = '<table><td colspan="6" class="py-8 text-center text-gray-400">No attendance records found</td></tr>';
+            } else {
+                tbody.innerHTML = recentAttendance.map(a => {
+                    const date = new Date(a.attendance_date || a.date);
+                    const hours = a.hours_worked || a.hours_attended || 0;
+                    
+                    return `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="py-3 px-6">${DashboardCommon.formatDate(date)}</td>
+                            <td class="py-3">${days[date.getDay()]}</td>
+                            <td class="py-3">${a.time_in || '—'}</td>
+                            <td class="py-3">${a.time_out || '—'}</td>
+                            <td class="py-3">${hours} hrs</td>
+                            <td class="py-3"><span class="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">Present</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        async function populateCutoffs() {
+            cutoffs = DashboardCommon.getAvailableCutoffs(allAttendance);
+            
+            const cutoffSelect = document.getElementById('cutoffSelect');
+            cutoffSelect.innerHTML = DashboardCommon.renderCutoffFilter(cutoffs, null);
+            
+            const currentCutoffPeriod = DashboardCommon.getCurrentCutoff();
+            const matchingCutoff = cutoffs.find(c => 
+                c.startStr === currentCutoffPeriod.startStr && c.endStr === currentCutoffPeriod.endStr
+            );
+            
+            if (matchingCutoff) {
+                cutoffSelect.value = matchingCutoff.key;
+                applyCutoff(matchingCutoff.key);
+            } else if (cutoffs.length > 0) {
+                cutoffSelect.value = cutoffs[0].key;
+                applyCutoff(cutoffs[0].key);
+            } else {
+                applyCutoff('all');
+            }
+        }
+
+        function changeCutoff() {
+            const cutoffKey = document.getElementById('cutoffSelect').value;
+            applyCutoff(cutoffKey);
+        }
+
+        function applyCutoff(cutoffKey) {
+            let filteredAttendance = [];
+            
+            if (cutoffKey === 'all') {
+                filteredAttendance = [...allAttendance];
+                document.getElementById('selectedPeriodInfo').textContent = 'Showing all records';
+            } else {
+                const cutoff = cutoffs.find(c => c.key === cutoffKey);
+                if (cutoff) {
+                    filteredAttendance = DashboardCommon.filterAttendanceByCutoff(allAttendance, cutoff.startStr, cutoff.endStr);
+                    document.getElementById('selectedPeriodInfo').textContent = `Period: ${cutoff.label}`;
+                } else {
+                    filteredAttendance = [...allAttendance];
+                }
+            }
+            
+            updateStats(filteredAttendance);
+        }
+
+        function updateStats(attendance) {
+            const stats = DashboardCommon.calculateAttendanceStats(attendance);
+            
+            document.getElementById('daysWorked').textContent = stats.daysPresent;
+            document.getElementById('totalHours').textContent = stats.totalHours;
+            
+            const expectedDays = 22;
+            const rate = (stats.totalHours / (expectedDays * 12)) * 100;
+            const attendanceRate = Math.min(Math.max(Math.round(rate), 0), 100);
+            document.getElementById('attendanceRate').textContent = attendanceRate + '%';
+        }
+
         function changePassword() {
             window.location.href = 'change-password.html';
         }
-        
+
         function logout() {
             localStorage.clear();
             window.location.href = 'index.html';
         }
-        
-        // Load data on page load
-        document.addEventListener('DOMContentLoaded', loadDashboardData);
     </script>
 </body>
 </html>

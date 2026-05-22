@@ -1,110 +1,151 @@
-// Payslip Module
-window.addEventListener("DOMContentLoaded", async () => {
-    try {
-        await Database.ensureDatabaseReady();
-        await loadPayslipData();
-    } catch (error) {
-        console.error("Error initializing payslip:", error);
-    }
-    
-    // Setup button event listeners
-    setupButtons();
+/**
+ * payslip.js - Standalone payslip viewer for direct access
+ * Supports direct view from payroll table
+ */
+
+let currentPayslipData = null;
+let currentTemplateType = null;
+
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadPayslipFromUrl();
 });
 
-async function loadPayslipData() {
+async function loadPayslipFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const payrollId = urlParams.get('id');
+    
+    if (!payrollId) {
+        showError('No payroll ID provided');
+        return;
+    }
+    
+    showLoading(true);
+    
     try {
-        // Get payroll ID from URL parameter
-        const urlParams = new URLSearchParams(window.location.search);
-        const payrollId = parseInt(urlParams.get('id'));
+        const response = await fetch(`/api/payslip.php?payroll_id=${payrollId}`, {
+            method: 'GET',
+            credentials: 'include'
+        });
         
-        let employee = null;
-        let payData = null;
-        
-        if (payrollId) {
-            // Load specific payroll record
-            const payroll = await Database.getAllPayroll();
-            payData = payroll.find(p => p.id === payrollId);
-            
-            if (payData) {
-                // Get the employee for this payroll
-                const employees = await Database.getAllEmployees();
-                employee = employees.find(emp => emp.id === payData.employee_id);
-            }
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to load payslip');
         }
         
-        // Fallback: Get first employee and their payroll if no ID provided
-        if (!employee || !payData) {
-            const employees = await Database.getAllEmployees();
-            const payroll = await Database.getAllPayroll();
-            
-            if (employees.length > 0 && payroll.length > 0) {
-                employee = employees[0];
-                payData = payroll.find(p => p.employee_id === employee.id) || payroll[0];
-            }
+        const result = await response.json();
+        
+        if (!result.success) {
+            throw new Error(result.error || 'Failed to load payslip data');
         }
-
-        if (employee && payData) {
-            // Update the payslip with real data
-            const infoBox = document.querySelector('.info-box');
-            if (infoBox) {
-                infoBox.innerHTML = `
-                    <div><span class="label">SCHOOL NAME:</span> <span class="value">PhilTech GMA</span></div>
-                    <div><span class="label">Payroll Period:</span> <span class="value">${payData.period}</span></div>
-                    <div><span class="label">Employee Name:</span> <span class="value">${employee.full_name}</span></div>
-                `;
-            }
-
-            // Update salary lines
-            const lines = document.querySelectorAll('.line');
-            if (lines.length >= 5) {
-                // Base Salary
-                lines[0].querySelector('.right').textContent = '₱' + parseFloat(employee.base_salary).toLocaleString();
-                
-                // Overtime Pay (calculate based on OT hours from attendance)
-                const attendance = await Database.getAttendanceByEmployee(employee.id);
-                const otHours = attendance.length > 0 ? (attendance[0].ot_hours || 0) : 0;
-                const otPay = otHours * (employee.base_salary / 176); // Hourly rate
-                lines[1].querySelector('.right').textContent = '₱' + otPay.toLocaleString();
-                
-                // Gross Salary
-                const gross = parseFloat(payData.gross_salary);
-                lines[2].querySelector('.right').textContent = '₱' + gross.toLocaleString();
-                
-                // Deductions
-                const deductions = parseFloat(payData.total_deduction);
-                lines[3].querySelector('.right').textContent = '₱' + deductions.toLocaleString();
-                
-                // Net Salary
-                const net = parseFloat(payData.net_salary);
-                lines[4].querySelector('.right').textContent = '₱' + net.toLocaleString();
-            }
-        }
+        
+        currentPayslipData = result.data;
+        currentTemplateType = result.data.type;
+        
+        renderPayslip();
+        
     } catch (error) {
-        console.error("Error loading payslip data:", error);
+        console.error('Error loading payslip:', error);
+        showError(error.message);
+    } finally {
+        showLoading(false);
     }
 }
 
-function setupButtons() {
-    const exportBtn = document.getElementById("exportBtn");
-    const printBtn = document.getElementById("printBtn");
-    const backBtn = document.getElementById("backBtn");
-
-    if (exportBtn) {
-        exportBtn.addEventListener("click", () => {
-            alert("Exporting payslip to PDF...\n\nThis feature will generate a downloadable PDF of the payslip.");
-        });
+function renderPayslip() {
+    const container = document.getElementById('payslipContent');
+    if (!container) return;
+    
+    let html = '';
+    if (currentTemplateType === 'faculty') {
+        html = window.payslipGenerator.generateFacultyHTML(currentPayslipData);
+    } else if (currentTemplateType === 'admin') {
+        html = window.payslipGenerator.generateAdminHTML(currentPayslipData);
+    } else if (currentTemplateType === 'guard') {
+        html = window.payslipGenerator.generateGuardHTML(currentPayslipData);
+    } else if (currentTemplateType === 'sa') {
+        html = window.payslipGenerator.generateSAHTML(currentPayslipData);
+    } else {
+        html = window.payslipGenerator.generateFacultyHTML(currentPayslipData);
     }
-
-    if (printBtn) {
-        printBtn.addEventListener("click", () => {
-            window.print();
-        });
+    
+    container.innerHTML = html;
+    
+    // Update status badge if exists
+    const statusBadge = document.getElementById('payslipStatus');
+    if (statusBadge) {
+        if (currentPayslipData.status === 'Approved') {
+            statusBadge.innerHTML = 'Approved';
+            statusBadge.className = 'px-3 py-1 bg-green-100 text-green-600 rounded-full text-sm';
+        } else {
+            statusBadge.innerHTML = currentPayslipData.status || 'Pending';
+            statusBadge.className = 'px-3 py-1 bg-yellow-100 text-yellow-600 rounded-full text-sm';
+        }
     }
-
-    if (backBtn) {
-        backBtn.addEventListener("click", () => {
-            window.location.href = "payroll.html";
-        });
+    
+    // Update approved by if exists
+    const approvedBySpan = document.getElementById('approvedBy');
+    if (approvedBySpan && currentPayslipData.approved_by) {
+        approvedBySpan.textContent = currentPayslipData.approved_by;
+        document.getElementById('approvedByRow').style.display = 'flex';
     }
 }
 
+function downloadPDF() {
+    if (!currentPayslipData) {
+        alert('No payslip data available');
+        return;
+    }
+    
+    if (currentPayslipData.status !== 'Approved') {
+        if (!confirm('This payslip is not yet approved. Download anyway?')) {
+            return;
+        }
+    }
+    
+    showLoading(true);
+    
+    window.payslipGenerator.generatePDF(currentPayslipData, currentTemplateType)
+        .catch(error => {
+            console.error('PDF generation error:', error);
+            alert('Error generating PDF: ' + error.message);
+        })
+        .finally(() => showLoading(false));
+}
+
+function printPayslip() {
+    if (!currentPayslipData) {
+        alert('No payslip data available');
+        return;
+    }
+    
+    window.payslipGenerator.printPayslip(currentPayslipData, currentTemplateType);
+}
+
+function goBack() {
+    window.history.back();
+}
+
+function showError(message) {
+    const container = document.getElementById('payslipContent');
+    if (container) {
+        container.innerHTML = `
+            <div class="text-center py-12 text-red-500">
+                <i class="fa-solid fa-circle-exclamation text-4xl mb-3"></i>
+                <p>Error: ${message}</p>
+                <button onclick="goBack()" class="mt-4 bg-[#b0303b] text-white px-4 py-2 rounded-lg">Go Back</button>
+            </div>
+        `;
+    }
+}
+
+function showLoading(show) {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = show ? 'flex' : 'none';
+    }
+}
+
+function logout() {
+    localStorage.clear();
+    window.location.href = 'index.html';
+}
