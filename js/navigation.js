@@ -56,25 +56,25 @@ const rolePages = {
         'dashboard-guard.html',
         'my-attendance.html',
         'my-payslips.html',
-        'profile.html'
+        'staff-profile.html'
     ],
     sa: [
         'dashboard-sa.html',
         'my-attendance.html',
         'my-payslips.html',
-        'profile.html'
+        'staff-profile.html'
     ],
     'admin-staff': [
         'dashboard-staff.html',
         'my-attendance.html',
         'my-payslips.html',
-        'profile.html'
+        'staff-profile.html'
     ],
     admin: [
         'dashboard-staff.html',
         'my-attendance.html',
         'my-payslips.html',
-        'profile.html'
+        'staff-profile.html'
     ]
 };
 
@@ -530,9 +530,9 @@ function getSettingsUrl() {
     if (role === 'superadmin') return 'settingsSadmin.html';
     if (role === 'accountant') return 'settings.html';
     if (role === 'oic') return 'dashboard-oic.html#settings';
-    if (role === 'guard') return 'profile.html';
-    if (role === 'sa') return 'profile.html';
-    if (role === 'admin-staff' || role === 'admin') return 'profile.html';
+    if (role === 'guard') return 'staff-profile.html';
+    if (role === 'sa') return 'staff-profile.html';
+    if (role === 'admin-staff' || role === 'admin') return 'staff-profile.html';
     return 'teacher-profile.html';
 }
 
