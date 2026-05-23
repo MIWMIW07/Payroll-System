@@ -209,6 +209,7 @@
         let allAttendance = [];
         let allPayroll = [];
         let cutoffs = [];
+        let savedPeriods = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -289,9 +290,18 @@
         }
 
         async function populateCutoffs() {
-            cutoffs = DashboardCommon.getAvailableCutoffs(allAttendance);
-            
             const cutoffSelect = document.getElementById('cutoffSelect');
+            savedPeriods = await DashboardCommon.loadPeriods();
+
+            if (savedPeriods.length > 0) {
+                cutoffs = savedPeriods.map(p => DashboardCommon.normalizePeriod(p));
+                cutoffSelect.innerHTML = DashboardCommon.renderPeriodFilter(savedPeriods, savedPeriods[0].id);
+                cutoffSelect.value = cutoffs[0].key;
+                applyCutoff(cutoffs[0].key);
+                return;
+            }
+
+            cutoffs = DashboardCommon.getAvailableCutoffs(allAttendance);
             cutoffSelect.innerHTML = DashboardCommon.renderCutoffFilter(cutoffs, null);
             
             const currentCutoffPeriod = DashboardCommon.getCurrentCutoff();
@@ -324,7 +334,7 @@
             } else {
                 const cutoff = cutoffs.find(c => c.key === cutoffKey);
                 if (cutoff) {
-                    filteredAttendance = DashboardCommon.filterAttendanceByCutoff(allAttendance, cutoff.startStr, cutoff.endStr);
+                    filteredAttendance = DashboardCommon.filterByPeriod(allAttendance, cutoff);
                     document.getElementById('selectedPeriodInfo').textContent = `Period: ${cutoff.label}`;
                 } else {
                     filteredAttendance = [...allAttendance];

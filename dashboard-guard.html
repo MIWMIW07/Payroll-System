@@ -189,6 +189,7 @@
         let employeeId = null;
         let allAttendance = [];
         let cutoffs = [];
+        let savedPeriods = [];
 
         document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('currentDate').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -243,7 +244,7 @@
             allAttendance = await Database.getAttendanceByEmployee(employeeId, 'guard');
             
             // Recent attendance (last 7 days)
-            const recentAttendance = [...allAttendance].reverse().slice(0, 7);
+            const recentAttendance = expandDailyAttendance(allAttendance).slice(0, 7);
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
             
             const tbody = document.getElementById('recentAttendance');
@@ -252,7 +253,7 @@
             } else {
                 tbody.innerHTML = recentAttendance.map(a => {
                     const date = new Date(a.attendance_date || a.date);
-                    const hours = a.hours_worked || a.hours_attended || 0;
+                    const hours = a.hours_worked || a.hours_attended || (a.present ? 8 : 0);
                     
                     return `
                         <tr class="border-b hover:bg-gray-50">
@@ -269,9 +270,18 @@
         }
 
         async function populateCutoffs() {
-            cutoffs = DashboardCommon.getAvailableCutoffs(allAttendance);
-            
             const cutoffSelect = document.getElementById('cutoffSelect');
+            savedPeriods = await DashboardCommon.loadPeriods();
+
+            if (savedPeriods.length > 0) {
+                cutoffs = savedPeriods.map(p => DashboardCommon.normalizePeriod(p));
+                cutoffSelect.innerHTML = DashboardCommon.renderPeriodFilter(savedPeriods, savedPeriods[0].id);
+                cutoffSelect.value = cutoffs[0].key;
+                applyCutoff(cutoffs[0].key);
+                return;
+            }
+
+            cutoffs = DashboardCommon.getAvailableCutoffs(expandDailyAttendance(allAttendance));
             cutoffSelect.innerHTML = DashboardCommon.renderCutoffFilter(cutoffs, null);
             
             const currentCutoffPeriod = DashboardCommon.getCurrentCutoff();
@@ -304,7 +314,7 @@
             } else {
                 const cutoff = cutoffs.find(c => c.key === cutoffKey);
                 if (cutoff) {
-                    filteredAttendance = DashboardCommon.filterAttendanceByCutoff(allAttendance, cutoff.startStr, cutoff.endStr);
+                    filteredAttendance = DashboardCommon.filterByPeriod(allAttendance, cutoff);
                     document.getElementById('selectedPeriodInfo').textContent = `Period: ${cutoff.label}`;
                 } else {
                     filteredAttendance = [...allAttendance];
@@ -315,7 +325,8 @@
         }
 
         function updateStats(attendance) {
-            const stats = DashboardCommon.calculateAttendanceStats(attendance);
+            const dailyRows = expandDailyAttendance(attendance);
+            const stats = DashboardCommon.calculateAttendanceStats(dailyRows);
             
             document.getElementById('daysWorked').textContent = stats.daysPresent;
             document.getElementById('totalHours').textContent = stats.totalHours;
@@ -324,6 +335,21 @@
             const rate = (stats.totalHours / (expectedDays * 12)) * 100;
             const attendanceRate = Math.min(Math.max(Math.round(rate), 0), 100);
             document.getElementById('attendanceRate').textContent = attendanceRate + '%';
+        }
+
+        function expandDailyAttendance(periodRows) {
+            return (periodRows || []).flatMap(period => {
+                if (!period.daily_data) return [period];
+                return Object.entries(period.daily_data).map(([date, present]) => ({
+                    date,
+                    attendance_date: date,
+                    present: present === true || present === 1 || present === '1' || present === 'true',
+                    hours_worked: present ? 8 : 0,
+                    period_start: period.period_start,
+                    period_end: period.period_end,
+                    rate: period.rate || 0
+                }));
+            }).sort((a, b) => new Date(b.date || b.attendance_date) - new Date(a.date || a.attendance_date));
         }
 
         function changePassword() {

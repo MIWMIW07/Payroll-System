@@ -71,6 +71,18 @@
             <button onclick="refreshDashboard()" class="bg-white px-4 py-2 rounded-lg text-sm font-medium shadow-sm hover:shadow-md transition-shadow flex items-center gap-2"><i class="fa-solid fa-rotate-right text-[#b0303b]"></i> Refresh</button>
         </div>
 
+        <div class="bg-white rounded-xl p-4 mb-6 shadow-sm border border-gray-100">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Payroll Period</label>
+                    <select id="periodSelect" class="px-4 py-2 border border-gray-200 rounded-lg bg-white min-w-72" onchange="changePeriod()">
+                        <option value="all">All Periods</option>
+                    </select>
+                </div>
+                <div class="text-sm text-gray-500" id="selectedPeriodInfo">Showing all payroll records</div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 stat-card"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-lg bg-[#b0303b]/10 text-[#b0303b] flex items-center justify-center"><i class="fa-solid fa-users"></i></div><span class="text-sm font-medium text-gray-500">Total Employees</span></div><h2 class="text-2xl font-bold text-gray-800" id="totalEmployees">0</h2></div>
             <div class="bg-white p-6 rounded-2xl shadow-sm stat-card"><div class="flex items-center gap-3 mb-3"><div class="w-10 h-10 rounded-lg bg-[#b0303b]/10 text-[#b0303b] flex items-center justify-center"><i class="fa-solid fa-money-bill-wave"></i></div><span class="text-sm font-medium text-gray-500">Total Payroll</span></div><h2 class="text-2xl font-bold text-gray-800" id="totalPayroll">₱0</h2></div>
@@ -110,9 +122,10 @@
         </div>
     </div>
 
-<script src="js/api-integration.js"></script>
+    <script src="js/api-integration.js"></script>
     <script src="js/database.js"></script>
     <script src="js/navigation.js"></script>
+    <script src="js/dashboard-common.js"></script>
     <script>
         console.log("=== SUPERADMIN DASHBOARD LOADED ===");
         
@@ -121,7 +134,10 @@
         let approvalChart = null;
         let allEmployees = [];
         let allPayroll = [];
+        let filteredPayroll = [];
         let allUsers = [];
+        let savedPeriods = [];
+        let selectedPeriod = null;
         
         // Direct API calls (like accountant pages)
         async function loadEmployeesFromAPI() {
@@ -162,17 +178,19 @@
                 allEmployees = await loadEmployeesFromAPI();
                 allPayroll = await loadPayrollFromAPI();
                 allUsers = await loadUsersFromAPI();
+                if (savedPeriods.length === 0) await loadPeriodFilter();
+                filteredPayroll = selectedPeriod ? DashboardCommon.filterByPeriod(allPayroll, selectedPeriod) : [...allPayroll];
                 
                 document.getElementById('totalEmployees').textContent = allEmployees.length;
-                const totalPayroll = allPayroll.reduce((s, p) => s + parseFloat(p.net_salary || 0), 0);
+                const totalPayroll = filteredPayroll.reduce((s, p) => s + parseFloat(p.net_salary || 0), 0);
                 document.getElementById('totalPayroll').textContent = '₱' + totalPayroll.toLocaleString();
                 document.getElementById('totalUsers').textContent = allUsers.length;
                 
-                const pendingCount = allPayroll.filter(p => p.status === 'Pending').length;
+                const pendingCount = filteredPayroll.filter(p => p.status === 'Pending').length;
                 document.getElementById('pendingApprovals').textContent = pendingCount;
                 document.getElementById('pendingCount').textContent = pendingCount;
                 
-                const pendingPayroll = allPayroll.filter(p => p.status === 'Pending').slice(0, 5);
+                const pendingPayroll = filteredPayroll.filter(p => p.status === 'Pending').slice(0, 5);
                 let pendingHtml = '';
                 if (pendingPayroll.length === 0) {
                     pendingHtml = '<div class="text-center text-gray-400 py-4">No pending approvals</div>';
@@ -195,11 +213,35 @@
                 }
                 document.getElementById('pendingList').innerHTML = pendingHtml;
                 
-                updateCharts(allPayroll);
+                updateCharts(filteredPayroll);
             } catch (error) {
                 console.error('Error loading dashboard data:', error);
             }
         }
+
+        async function loadPeriodFilter() {
+            savedPeriods = await DashboardCommon.loadPeriods();
+            const select = document.getElementById('periodSelect');
+            if (!select) return;
+
+            if (savedPeriods.length === 0) {
+                select.innerHTML = '<option value="all">All Periods</option>';
+                selectedPeriod = null;
+                return;
+            }
+
+            select.innerHTML = DashboardCommon.renderPeriodFilter(savedPeriods, savedPeriods[0].id);
+            selectedPeriod = DashboardCommon.normalizePeriod(savedPeriods[0]);
+            document.getElementById('selectedPeriodInfo').textContent = `Period: ${selectedPeriod.label}`;
+        }
+
+        window.changePeriod = async function() {
+            const value = document.getElementById('periodSelect').value;
+            const period = savedPeriods.find(p => `period-${p.id}` === value);
+            selectedPeriod = DashboardCommon.normalizePeriod(period);
+            document.getElementById('selectedPeriodInfo').textContent = selectedPeriod ? `Period: ${selectedPeriod.label}` : 'Showing all payroll records';
+            await loadDashboardData();
+        };
         
         function updateCharts(payroll) {
             const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];

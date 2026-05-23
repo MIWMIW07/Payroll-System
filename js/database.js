@@ -356,9 +356,21 @@ async function saveTeacherLoad(load) {
 // ===========================
 async function getAllAttendance() {
     const api = await ensureApiIntegration();
-    const attendance = await api.getAttendance('admin-master');
+    const attendance = await api.getAttendance('eda');
     console.log("✓ Loaded " + (attendance?.length || 0) + " attendance records from database");
     return Array.isArray(attendance) ? attendance : [];
+}
+
+async function loadPeriods() {
+    try {
+        const response = await fetch('/api/period/list.php', { credentials: 'include' });
+        if (!response.ok) return [];
+        const data = await response.json();
+        return Array.isArray(data.periods) ? data.periods : [];
+    } catch (error) {
+        console.warn('Could not load payroll periods:', error.message);
+        return [];
+    }
 }
 
 async function getAttendanceByEmployee(employeeId, tabType = null) {
@@ -818,6 +830,7 @@ const Database = {
     getAttendanceByEmployee,
     getAttendanceById,
     getAttendanceByPeriod,
+    loadPeriods,
     addAttendance,
     updateAttendance,
     deleteAttendance,

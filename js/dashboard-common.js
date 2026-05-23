@@ -4,6 +4,63 @@
  */
 
 class DashboardCommon {
+    static async loadPeriods() {
+        try {
+            const response = await fetch('/api/period/list.php', { credentials: 'include' });
+            if (!response.ok) return [];
+            const data = await response.json();
+            return Array.isArray(data.periods) ? data.periods : [];
+        } catch (error) {
+            console.warn('Could not load payroll periods:', error.message);
+            return [];
+        }
+    }
+
+    static normalizePeriod(period) {
+        if (!period) return null;
+        return {
+            key: `period-${period.id}`,
+            id: period.id,
+            label: period.display || `${this.formatDate(period.start)} - ${this.formatDate(period.end)}`,
+            start: new Date(period.start),
+            end: new Date(period.end),
+            startStr: period.start,
+            endStr: period.end,
+            updated_at: period.updated_at || ''
+        };
+    }
+
+    static renderPeriodFilter(periods, selectedId) {
+        if (!periods || periods.length === 0) {
+            return '<option value="all">Auto (No saved periods)</option>';
+        }
+
+        return periods.map(period => {
+            const selected = String(period.id) === String(selectedId) ? 'selected' : '';
+            const updated = period.updated_at ? ` - updated ${new Date(period.updated_at).toLocaleDateString()}` : '';
+            const label = `${period.display || `${this.formatDate(period.start)} - ${this.formatDate(period.end)}`}${updated}`;
+            return `<option value="period-${period.id}" ${selected}>${label}</option>`;
+        }).join('');
+    }
+
+    static filterByPeriod(records, period) {
+        if (!period || !period.startStr || !period.endStr) return records || [];
+        const start = new Date(period.startStr);
+        const end = new Date(period.endStr);
+
+        return (records || []).filter(record => {
+            if (record.period_start && record.period_end) {
+                const recordStart = new Date(record.period_start);
+                const recordEnd = new Date(record.period_end);
+                return recordStart <= end && recordEnd >= start;
+            }
+
+            const dateValue = record.attendance_date || record.date;
+            if (!dateValue) return false;
+            const date = new Date(dateValue);
+            return date >= start && date <= end;
+        });
+    }
     
     /**
      * Get current cut-off based on date
