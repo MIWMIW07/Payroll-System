@@ -9,7 +9,16 @@ const currentPageName = window.location.pathname.split('/').pop();
 const publicPages = ['index.html', '', 'login.html'];
 
 function normalizeRole(role) {
-    return String(role || '').trim().toLowerCase().replace(/_/g, '-');
+    return String(role || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
+}
+
+function getEffectiveRole(user = {}) {
+    const username = normalizeRole(user.username);
+    const role = normalizeRole(user.role);
+    if (username === 'oic' || ['oic', 'oic-head', 'officer-in-charge'].includes(role)) {
+        return 'oic';
+    }
+    return role;
 }
 
 // Role-based page mappings - COMPLETE
@@ -248,11 +257,12 @@ async function checkAuth() {
     window.currentUser = user;
     
     // Also store in window for easy access
-    window.userRole = user.role;
+    const userRole = getEffectiveRole(user) || 'accountant';
+    window.userRole = userRole;
     window.userName = user.full_name;
     try {
-        localStorage.setItem('userRole', user.role);
-        sessionStorage.setItem('userRole', user.role);
+        localStorage.setItem('userRole', userRole);
+        sessionStorage.setItem('userRole', userRole);
         const displayName = user.full_name || user.username || user.role || 'User';
         localStorage.setItem('userName', displayName);
         sessionStorage.setItem('userName', displayName);
@@ -264,7 +274,6 @@ async function checkAuth() {
     setSessionState(SESSION_ACTIVE);
     
     // Role-based page access check
-    const userRole = normalizeRole(user.role) || 'accountant';
     const allowedPages = rolePages[userRole] || [];
     
     // Special case: attendanceSadmin.html is removed
@@ -340,7 +349,7 @@ function createProfileMenu() {
     if (document.getElementById('globalProfileMenu')) return;
     
     const user = window.currentUser || {};
-    const userRole = user.role || 'accountant';
+    const userRole = getEffectiveRole(user) || 'accountant';
     
     const menuHTML = `
         <div id="globalProfileMenu" class="profile-menu" style="display: none;">
@@ -429,7 +438,7 @@ document.addEventListener('click', function(event) {
 
 function viewProfile() {
     const user = window.currentUser || {};
-    const role = normalizeRole(user.role) || 'accountant';
+    const role = getEffectiveRole(user) || 'accountant';
     
     if (role === 'superadmin') {
         window.location.href = 'settingsSadmin.html';
@@ -450,7 +459,7 @@ function changePassword() {
         document.dispatchEvent(event);
     } else {
         const user = window.currentUser || {};
-        const role = normalizeRole(user.role) || 'accountant';
+        const role = getEffectiveRole(user) || 'accountant';
         
         if (role === 'superadmin') {
             window.location.href = 'settingsSadmin.html';
@@ -468,7 +477,7 @@ function changePassword() {
 
 function viewActivity() {
     const user = window.currentUser || {};
-    const role = normalizeRole(user.role) || 'accountant';
+    const role = getEffectiveRole(user) || 'accountant';
     
     if (role === 'superadmin') {
         if (currentPageName === 'settingsSadmin.html') {
@@ -498,19 +507,19 @@ function viewAuditLog() {
 // ROLE-BASED NAVIGATION HELPERS
 // ===========================
 function getDashboardUrl() {
-    const role = normalizeRole(window.currentUser?.role);
+    const role = getEffectiveRole(window.currentUser);
     return dashboards[role] || 'index.html';
 }
 
 function getEmployeesUrl() {
-    const role = normalizeRole(window.currentUser?.role);
+    const role = getEffectiveRole(window.currentUser);
     if (role === 'superadmin') return 'employeesSadmin.html';
     if (role === 'accountant') return 'employees.html';
     return 'teacher-dashboard.html';
 }
 
 function getAttendanceUrl() {
-    const role = normalizeRole(window.currentUser?.role);
+    const role = getEffectiveRole(window.currentUser);
     if (role === 'superadmin') return 'dashboardSadmin.html';
     if (role === 'accountant') return 'attendance.html';
     if (role === 'guard') return 'guard-attendance.html';
@@ -520,7 +529,7 @@ function getAttendanceUrl() {
 }
 
 function getPayrollUrl() {
-    const role = normalizeRole(window.currentUser?.role);
+    const role = getEffectiveRole(window.currentUser);
     if (role === 'superadmin') return 'payrollSadmin.html';
     if (role === 'accountant') return 'payroll.html';
     if (role === 'guard') return 'guard-payslips.html';
@@ -530,7 +539,7 @@ function getPayrollUrl() {
 }
 
 function getSettingsUrl() {
-    const role = normalizeRole(window.currentUser?.role);
+    const role = getEffectiveRole(window.currentUser);
     if (role === 'superadmin') return 'settingsSadmin.html';
     if (role === 'accountant') return 'settings.html';
     if (role === 'oic') return 'dashboard-oic.html#settings';
