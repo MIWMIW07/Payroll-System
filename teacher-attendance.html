@@ -180,6 +180,17 @@
             if (!employeeId) return;
             
             allAttendance = await Database.getAttendanceByEmployee(employeeId);
+
+            // Normalize fields expected by DashboardCommon + this UI.
+            allAttendance = (allAttendance || []).map(a => ({
+                ...a,
+                attendance_date: a.attendance_date || a.date,
+                hours_worked: a.hours_worked ?? a.hours_attended ?? 0,
+                overtime_hours: a.overtime_hours ?? a.ot_hours ?? 0,
+                lates: a.lates ?? a.late_hours ?? 0,
+                pay_type: a.pay_type || 'Regular'
+            }));
+
             
             cutoffs = DashboardCommon.getAvailableCutoffs(allAttendance);
             
