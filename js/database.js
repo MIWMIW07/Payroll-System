@@ -356,9 +356,147 @@ async function saveTeacherLoad(load) {
 // ===========================
 async function getAllAttendance() {
     const api = await ensureApiIntegration();
-    const attendance = await api.getAttendance('eda');
-    console.log("✓ Loaded " + (attendance?.length || 0) + " attendance records from database");
-    return Array.isArray(attendance) ? attendance : [];
+    const attendanceTypes = ['shs-dtr', 'college-dtr', 'eda', 'admin-pay', 'guard', 'sa'];
+    const [shsDtr, collegeDtr, eda, adminPay, guard, sa] = await Promise.all(
+        attendanceTypes.map(type => getAttendanceRecordsByType(api, type))
+    );
+
+    const attendance = [
+        ...normalizeDtrAttendanceRows(shsDtr, 'shs-dtr', 'Teaching'),
+        ...normalizeDtrAttendanceRows(collegeDtr, 'college-dtr', 'College'),
+        ...normalizeEdaAttendanceRows(eda),
+        ...normalizeAdminPayRows(adminPay),
+        ...normalizeDayPayRows(guard, 'guard', 'Guard'),
+        ...normalizeDayPayRows(sa, 'sa', 'Student Assistant')
+    ];
+
+    console.log("Loaded " + attendance.length + " attendance records from database");
+    return attendance;
+}
+
+function getPeriodDate(record) {
+    return record.period_start || record.attendance_date || record.date || '';
+}
+
+function normalizeEmployeeId(value) {
+    const numeric = Number(value);
+    return Number.isFinite(numeric) && String(value).trim() !== '' ? numeric : value;
+}
+
+function getPeriodLabel(record) {
+    if (record.payroll_period) return record.payroll_period;
+    if (record.period_start && record.period_end) return `${record.period_start} - ${record.period_end}`;
+    return record.period || '';
+}
+
+function normalizeDtrAttendanceRows(records, tabType, payType) {
+    return (records || []).flatMap(record => {
+        const expanded = expandDtrAttendance([record], record.employee_id, tabType, payType);
+        if (expanded.length > 0) {
+            return expanded.map(row => ({
+                ...row,
+                id: record.id,
+                employee_id: normalizeEmployeeId(record.employee_id),
+                tab_type: tabType,
+                payroll_period: getPeriodLabel(record)
+            }));
+        }
+
+        const totalHours = Number(record.total_hours) || 0;
+        if (totalHours <= 0) return [];
+
+        return [{
+            id: record.id,
+            employee_id: normalizeEmployeeId(record.employee_id),
+            tab_type: tabType,
+            attendance_date: getPeriodDate(record),
+            date: getPeriodDate(record),
+            period_start: record.period_start || '',
+            period_end: record.period_end || '',
+            payroll_period: getPeriodLabel(record),
+            hours_worked: totalHours,
+            hours_attended: totalHours,
+            overtime_hours: 0,
+            ot_hours: 0,
+            lates: 0,
+            absences: 0,
+            pay_type: payType,
+            source: tabType
+        }];
+    });
+}
+
+function normalizeEdaAttendanceRows(records) {
+    return (records || []).map(record => ({
+        id: record.id,
+        employee_id: normalizeEmployeeId(record.employee_id),
+        tab_type: 'eda',
+        attendance_date: getPeriodDate(record),
+        date: getPeriodDate(record),
+        period_start: record.period_start || '',
+        period_end: record.period_end || '',
+        payroll_period: getPeriodLabel(record),
+        hours_worked: 0,
+        hours_attended: 0,
+        overtime_hours: Number(record.overtime) || 0,
+        ot_hours: Number(record.overtime) || 0,
+        lates: Number(record.lates) || 0,
+        absences: Number(record.absences) || 0,
+        pay_type: 'EDA',
+        source: 'eda'
+    }));
+}
+
+function normalizeAdminPayRows(records) {
+    return (records || []).map(record => {
+        const hours = Number(record.admin_hours) || 0;
+        return {
+            id: record.id,
+            employee_id: normalizeEmployeeId(record.employee_id),
+            tab_type: 'admin-pay',
+            attendance_date: getPeriodDate(record),
+            date: getPeriodDate(record),
+            period_start: record.period_start || '',
+            period_end: record.period_end || '',
+            payroll_period: getPeriodLabel(record),
+            hours_worked: hours,
+            hours_attended: hours,
+            overtime_hours: 0,
+            ot_hours: 0,
+            lates: 0,
+            absences: 0,
+            pay_type: 'Admin Pay',
+            admin_pay: Number(record.total_pay) || 0,
+            source: 'admin-pay'
+        };
+    });
+}
+
+function normalizeDayPayRows(records, tabType, payType) {
+    return (records || []).map(record => {
+        const daysWorked = Number(record.days_worked) || 0;
+        const hours = daysWorked * 8;
+        return {
+            id: record.id,
+            employee_id: normalizeEmployeeId(record.employee_id),
+            tab_type: tabType,
+            attendance_date: getPeriodDate(record),
+            date: getPeriodDate(record),
+            period_start: record.period_start || '',
+            period_end: record.period_end || '',
+            payroll_period: getPeriodLabel(record),
+            hours_worked: hours,
+            hours_attended: hours,
+            overtime_hours: 0,
+            ot_hours: 0,
+            lates: 0,
+            absences: 0,
+            pay_type: payType,
+            days_worked: daysWorked,
+            total_pay: Number(record.total_pay) || 0,
+            source: tabType
+        };
+    });
 }
 
 async function loadPeriods() {
@@ -410,7 +548,7 @@ function expandDtrAttendance(records, employeeId, source, payType) {
                 if (!date || hoursWorked <= 0) return;
 
                 expanded.push({
-                    employee_id: record.employee_id,
+                    employee_id: normalizeEmployeeId(record.employee_id),
                     attendance_date: date,
                     date,
                     hours_worked: hoursWorked,
