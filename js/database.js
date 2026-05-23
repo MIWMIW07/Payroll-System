@@ -891,22 +891,27 @@ async function generatePayrollFromAttendance(periodStart, periodEnd) {
             let totalOvertime = 0;
             let totalLates = 0;
             let totalAdminPay = 0;
-            
+            let totalGuardPay = 0;
+            let totalSaPay = 0;
+
             empAttendance.forEach(att => {
                 if (att.tab_type === "shs-dtr" || att.tab_type === "college-dtr") {
-                    totalHours += (att.mon || 0) + (att.tue || 0) + (att.wed || 0) + 
-                                  (att.thu || 0) + (att.fri || 0) + (att.sat || 0) + (att.sun || 0);
+                    totalHours += att.hours_worked || 0;
                 } else if (att.tab_type === "eda") {
-                    totalOvertime += att.overtime || 0;
+                    totalOvertime += att.overtime_hours || att.ot_hours || 0;
                     totalLates += att.lates || 0;
                 } else if (att.tab_type === "admin-pay") {
-                    const adminHours = (att.mon || 0) + (att.tue || 0) + (att.wed || 0) + 
-                                       (att.thu || 0) + (att.fri || 0) + (att.sat || 0) + (att.sun || 0);
-                    const adminRate = att.admin_pay_rate || employee.admin_pay_rate || 0;
-                    totalAdminPay += adminHours * adminRate;
+                    totalHours += att.hours_worked || 0;
+                    totalAdminPay += att.admin_pay || 0;
+                } else if (att.tab_type === "guard") {
+                    totalHours += att.hours_worked || 0;
+                    totalGuardPay += att.total_pay || 0;
+                } else if (att.tab_type === "sa") {
+                    totalHours += att.hours_worked || 0;
+                    totalSaPay += att.total_pay || 0;
                 }
             });
-            
+
             let hourlyRate = 0;
             switch(employee.assignment) {
                 case "shs_only": hourlyRate = employee.rate_shs || 80; break;
@@ -920,10 +925,10 @@ async function generatePayrollFromAttendance(periodStart, periodEnd) {
                 case "sa": hourlyRate = employee.rate_sa || 100; break;
                 default: hourlyRate = 80;
             }
-            
+
             const regularSalary = totalHours * hourlyRate;
             const overtimeSalary = totalOvertime * hourlyRate * 1.25;
-            const grossSalary = regularSalary + overtimeSalary + totalAdminPay;
+            const grossSalary = regularSalary + overtimeSalary + totalAdminPay + totalGuardPay + totalSaPay;
             
             const undertimeHours = totalLates / 60;
             const undertimeDeduction = undertimeHours * hourlyRate;
@@ -941,6 +946,8 @@ async function generatePayrollFromAttendance(periodStart, periodEnd) {
                 regular_hours: totalHours,
                 overtime_hours: totalOvertime,
                 admin_pay: totalAdminPay,
+                guard_pay: totalGuardPay,
+                sa_pay: totalSaPay,
                 gross_salary: Math.round(grossSalary),
                 sss: sss,
                 philhealth: philhealth,
