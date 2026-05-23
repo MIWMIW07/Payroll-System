@@ -20,6 +20,22 @@ if (strpos($uri, '.php') !== false) {
 }
 
 // API routes - convert /api/path to /api/path.php
+if (strpos($uri, '/api/attendance/') === 0 && strpos($uri, '.php') === false) {
+    $attendanceType = substr($uri, strlen('/api/attendance/'));
+    $dedicatedFile = __DIR__ . $uri . '.php';
+
+    if (file_exists($dedicatedFile)) {
+        require $dedicatedFile;
+        return;
+    }
+
+    if ($attendanceType !== '' && file_exists(__DIR__ . '/api/attendance.php')) {
+        $_GET['type'] = $attendanceType;
+        require __DIR__ . '/api/attendance.php';
+        return;
+    }
+}
+
 if (strpos($uri, '/api/') === 0) {
     $phpFile = __DIR__ . $uri . '.php';
     

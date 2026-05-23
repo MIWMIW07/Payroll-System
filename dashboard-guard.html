@@ -240,7 +240,7 @@
 
         async function loadAttendance() {
             if (!employeeId) return;
-            allAttendance = await Database.getAttendanceByEmployee(employeeId);
+            allAttendance = await Database.getAttendanceByEmployee(employeeId, 'guard');
             
             // Recent attendance (last 7 days)
             const recentAttendance = [...allAttendance].reverse().slice(0, 7);
