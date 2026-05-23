@@ -363,12 +363,17 @@ async function getAllAttendance() {
 
 async function getAttendanceByEmployee(employeeId, tabType = null) {
     if (tabType && ['guard', 'sa'].includes(tabType)) {
-        const api = await ensureApiIntegration();
-        const attendance = await api.getAttendance(tabType);
-        return (Array.isArray(attendance) ? attendance : []).filter(a =>
-            Number(a.employee_id) === Number(employeeId) ||
-            String(a.employee_id) === String(employeeId)
-        );
+        try {
+            const api = await ensureApiIntegration();
+            const attendance = await api.getAttendance(tabType);
+            return (Array.isArray(attendance) ? attendance : []).filter(a =>
+                Number(a.employee_id) === Number(employeeId) ||
+                String(a.employee_id) === String(employeeId)
+            );
+        } catch (error) {
+            console.warn(`Could not load ${tabType} attendance records:`, error.message);
+            return [];
+        }
     }
 
     const all = await getAllAttendance();

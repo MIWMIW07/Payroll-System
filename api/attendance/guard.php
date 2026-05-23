@@ -5,7 +5,9 @@
 
 require_once __DIR__ . '/../core/bootstrap.php';
 
-require_auth();
+if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
+    require_auth();
+}
 
 function guardResponse($data, int $status = 200): void {
     if ($status >= 400) {

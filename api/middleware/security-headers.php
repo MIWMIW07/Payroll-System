@@ -104,7 +104,7 @@ class SecurityHeaders {
         $csp[] = "img-src 'self' data: https://i.pravatar.cc https://*.gravatar.com blob:";
         
         // Connect sources (for API calls)
-        $csp[] = "connect-src 'self' https://*.onrender.com";
+        $csp[] = "connect-src 'self' https://*.onrender.com https://payroll-system-dtbs.onrender.com";
         
         // Frame sources
         $csp[] = "frame-src 'none'";

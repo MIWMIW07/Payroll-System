@@ -11,6 +11,7 @@ function bootstrapApplyHeaders(): void
     $allowedOrigins = [
         'https://philtech-payroll.onrender.com',
         'https://payroll-main-1.onrender.com',
+        'https://payroll-system-dtbs.onrender.com',
     ];
     $isLocal = strpos($origin, 'http://localhost') === 0 || strpos($origin, 'http://127.0.0.1') === 0;
     if ($origin !== '' && ($isLocal || in_array($origin, $allowedOrigins, true))) {
