@@ -373,6 +373,139 @@ async function loadPeriods() {
     }
 }
 
+async function getAttendanceRecordsByType(api, type) {
+    try {
+        const attendance = await api.getAttendance(type);
+        return Array.isArray(attendance) ? attendance : [];
+    } catch (error) {
+        console.warn(`Could not load ${type} attendance records:`, error.message);
+        return [];
+    }
+}
+
+function parseDailyData(dailyData) {
+    if (!dailyData) return {};
+    if (typeof dailyData === 'string') {
+        try {
+            const parsed = JSON.parse(dailyData);
+            return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {};
+        } catch (error) {
+            return {};
+        }
+    }
+    return typeof dailyData === 'object' && !Array.isArray(dailyData) ? dailyData : {};
+}
+
+function expandDtrAttendance(records, employeeId, source, payType) {
+    const employeeKey = String(employeeId);
+    const expanded = [];
+
+    (records || [])
+        .filter(record => String(record.employee_id) === employeeKey)
+        .forEach(record => {
+            const dailyData = parseDailyData(record.daily_data);
+
+            Object.entries(dailyData).forEach(([date, hours]) => {
+                const hoursWorked = Number(hours) || 0;
+                if (!date || hoursWorked <= 0) return;
+
+                expanded.push({
+                    employee_id: record.employee_id,
+                    attendance_date: date,
+                    date,
+                    hours_worked: hoursWorked,
+                    hours_attended: hoursWorked,
+                    overtime_hours: 0,
+                    ot_hours: 0,
+                    lates: 0,
+                    pay_type: payType,
+                    period_start: record.period_start || '',
+                    period_end: record.period_end || '',
+                    source
+                });
+            });
+        });
+
+    return expanded;
+}
+
+function mergeDailyAttendance(records) {
+    const byDate = new Map();
+
+    records.forEach(record => {
+        const key = record.attendance_date || record.date;
+        if (!key) return;
+
+        if (!byDate.has(key)) {
+            byDate.set(key, { ...record });
+            return;
+        }
+
+        const existing = byDate.get(key);
+        const hoursWorked = (Number(existing.hours_worked) || 0) + (Number(record.hours_worked) || 0);
+        const overtimeHours = (Number(existing.overtime_hours) || 0) + (Number(record.overtime_hours) || 0);
+        const lates = (Number(existing.lates) || 0) + (Number(record.lates) || 0);
+        const sources = new Set(String(existing.source || '').split('+').filter(Boolean));
+        sources.add(record.source);
+        const payTypes = new Set(String(existing.pay_type || '').split('+').filter(Boolean));
+        payTypes.add(record.pay_type);
+
+        byDate.set(key, {
+            ...existing,
+            hours_worked: hoursWorked,
+            hours_attended: hoursWorked,
+            overtime_hours: overtimeHours,
+            ot_hours: overtimeHours,
+            lates,
+            pay_type: Array.from(payTypes).join('+'),
+            source: Array.from(sources).join('+')
+        });
+    });
+
+    return Array.from(byDate.values());
+}
+
+function isDateInRange(date, start, end) {
+    if (!date || !start || !end) return false;
+    const value = new Date(`${date}T00:00:00`);
+    const startDate = new Date(`${start}T00:00:00`);
+    const endDate = new Date(`${end}T00:00:00`);
+    return value >= startDate && value <= endDate;
+}
+
+function applyEdaTotalsToDailyRecords(dailyRecords, edaRecords, employeeId) {
+    const employeeKey = String(employeeId);
+
+    (edaRecords || [])
+        .filter(record => String(record.employee_id) === employeeKey)
+        .forEach(eda => {
+            const periodRecords = dailyRecords.filter(record =>
+                isDateInRange(record.attendance_date || record.date, eda.period_start, eda.period_end)
+            );
+
+            if (periodRecords.length === 0) return;
+
+            const totalHours = periodRecords.reduce((sum, record) => sum + (Number(record.hours_worked) || 0), 0);
+            const totalLates = Number(eda.lates) || 0;
+            const totalOvertime = Number(eda.overtime) || 0;
+
+            periodRecords.forEach(record => {
+                const weight = totalHours > 0
+                    ? (Number(record.hours_worked) || 0) / totalHours
+                    : 1 / periodRecords.length;
+                const lates = totalLates * weight;
+                const overtimeHours = totalOvertime * weight;
+
+                record.lates = lates;
+                record.overtime_hours = overtimeHours;
+                record.ot_hours = overtimeHours;
+                record.absences = (Number(eda.absences) || 0) * weight;
+            });
+        });
+
+    return dailyRecords;
+}
+
 async function getAttendanceByEmployee(employeeId, tabType = null) {
     if (tabType && ['guard', 'sa'].includes(tabType)) {
         // NOTE:
@@ -398,8 +531,20 @@ async function getAttendanceByEmployee(employeeId, tabType = null) {
         }
     }
 
-    const all = await getAllAttendance();
-    return all.filter(a => Number(a.employee_id) === Number(employeeId));
+    const api = await ensureApiIntegration();
+    const [shsDtr, collegeDtr, eda] = await Promise.all([
+        getAttendanceRecordsByType(api, 'shs-dtr'),
+        getAttendanceRecordsByType(api, 'college-dtr'),
+        getAttendanceRecordsByType(api, 'eda')
+    ]);
+
+    const dailyAttendance = mergeDailyAttendance([
+        ...expandDtrAttendance(shsDtr, employeeId, 'shs', 'teaching'),
+        ...expandDtrAttendance(collegeDtr, employeeId, 'college', 'college')
+    ]);
+
+    return applyEdaTotalsToDailyRecords(dailyAttendance, eda, employeeId)
+        .sort((a, b) => new Date(a.attendance_date || a.date) - new Date(b.attendance_date || b.date));
 }
 
 async function getAttendanceById(id) {
