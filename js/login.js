@@ -15,18 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.warn('User role storage not available');
             }
 
-            const dashboards = {
-                'superadmin': 'dashboardSadmin.html',
-                'accountant': 'dashboard.html',
-                'oic': 'dashboard-oic.html',
-                'teacher': 'teacher-dashboard.html',
-                'guard': 'dashboard-guard.html',
-                'sa': 'dashboard-sa.html',
-                'admin': 'dashboard-staff.html',
-                'admin_staff': 'dashboard-staff.html',
-                'admin-staff': 'dashboard-staff.html'
-            };
-            window.location.href = dashboards[normalizeRole(user.role)] || 'dashboard.html';
+            window.location.href = getDashboardForUser(user);
         }
     });
 
@@ -140,19 +129,7 @@ async function handleLogin(username, password, rememberMe) {
                 console.warn('Session storage not available');
             }
 
-            const dashboards = {
-                'superadmin': 'dashboardSadmin.html',
-                'accountant': 'dashboard.html',
-                'oic': 'dashboard-oic.html',
-                'teacher': 'teacher-dashboard.html',
-                'guard': 'dashboard-guard.html',
-                'sa': 'dashboard-sa.html',
-                'admin': 'dashboard-staff.html',
-                'admin_staff': 'dashboard-staff.html',
-                'admin-staff': 'dashboard-staff.html'
-            };
-
-            const redirectUrl = dashboards[normalizeRole(data.user.role)] || 'dashboard.html';
+            const redirectUrl = getDashboardForUser(data.user);
             return { success: true, redirect: redirectUrl };
         } else {
             return { success: false, message: data.error || 'Invalid username or password' };
@@ -164,5 +141,26 @@ async function handleLogin(username, password, rememberMe) {
 }
 
 function normalizeRole(role) {
-    return String(role || '').trim().toLowerCase();
+    return String(role || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
+}
+
+function getDashboardForUser(user = {}) {
+    const dashboards = {
+        'superadmin': 'dashboardSadmin.html',
+        'accountant': 'dashboard.html',
+        'oic': 'dashboard-oic.html',
+        'teacher': 'teacher-dashboard.html',
+        'guard': 'dashboard-guard.html',
+        'sa': 'dashboard-sa.html',
+        'admin': 'dashboard-staff.html',
+        'admin-staff': 'dashboard-staff.html'
+    };
+
+    const role = normalizeRole(user.role);
+    const username = normalizeRole(user.username);
+    if (username === 'oic' || ['oic', 'oic-head', 'officer-in-charge'].includes(role)) {
+        return 'dashboard-oic.html';
+    }
+
+    return dashboards[role] || 'dashboard.html';
 }

@@ -170,18 +170,7 @@
                 const result = await response.json();
                 
                 if (result.user && result.user.role) {
-                    const dashboards = {
-                        'superadmin': 'dashboardSadmin.html',
-                        'accountant': 'dashboard.html',
-                        'oic': 'dashboard-oic.html',
-                        'teacher': 'teacher-dashboard.html',
-                        'guard': 'dashboard-guard.html',
-                        'sa': 'dashboard-sa.html',
-                        'admin': 'dashboard-staff.html',
-                        'admin_staff': 'dashboard-staff.html',
-                        'admin-staff': 'dashboard-staff.html'
-                    };
-                    window.location.replace(dashboards[normalizeRole(result.user.role)] || 'dashboard.html');
+                    window.location.replace(getDashboardForRole(result.user.role, result.user.username));
                 }
             } catch (e) {
                 // Not logged in, stay on login page
@@ -209,7 +198,7 @@
         }
 
         // Determine dashboard based on role
-        function getDashboardForRole(role) {
+        function getDashboardForRole(role, username = '') {
             const dashboards = {
                 'superadmin': 'dashboardSadmin.html',
                 'accountant': 'dashboard.html',
@@ -222,11 +211,16 @@
                 'guard': 'dashboard-guard.html',
                 'sa': 'dashboard-sa.html'
             };
-            return dashboards[normalizeRole(role)] || 'dashboard.html';
+            const normalizedRole = normalizeRole(role);
+            const normalizedUsername = normalizeRole(username);
+            if (normalizedUsername === 'oic' || ['oic', 'oic-head', 'officer-in-charge'].includes(normalizedRole)) {
+                return 'dashboard-oic.html';
+            }
+            return dashboards[normalizedRole] || 'dashboard.html';
         }
 
         function normalizeRole(role) {
-            return String(role || '').trim().toLowerCase();
+            return String(role || '').trim().toLowerCase().replace(/[\s_]+/g, '-');
         }
 
         // Login handler - calls backend API with session
@@ -267,19 +261,7 @@
                     showMessage(`Welcome, ${result.user.full_name}! Redirecting...`, 'success');
                     
                     // Redirect based on role
-                    const dashboards = {
-                        'superadmin': 'dashboardSadmin.html',
-                        'accountant': 'dashboard.html',
-                        'oic': 'dashboard-oic.html',
-                        'teacher': 'teacher-dashboard.html',
-                        'guard': 'dashboard-guard.html',
-                        'sa': 'dashboard-sa.html',
-                        'admin': 'dashboard-staff.html',
-                        'admin_staff': 'dashboard-staff.html',
-                        'admin-staff': 'dashboard-staff.html'
-                    };
-                    
-                    const redirect = dashboards[normalizeRole(result.user.role)] || 'dashboard.html';
+                    const redirect = getDashboardForRole(result.user.role, result.user.username);
                     setTimeout(() => { window.location.href = redirect; }, 800);
                     
                 } else {
