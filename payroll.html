@@ -414,9 +414,30 @@
         }
 
         function renderTable(payrollData = allPayroll) {
-            // ... (existing renderTable logic from original - abbreviated for brevity)
             const tbody = document.getElementById('payrollTableBody');
-            const filtered = payrollData.filter(p => true); // Add search/status filter logic here
+            const searchTerm = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
+            const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+
+            const filtered = payrollData.filter(p => {
+                const emp = allEmployees.find(e => e.id == p.employee_id);
+                const employeeName = emp?.full_name || '';
+                const searchableValues = [
+                    employeeName,
+                    p.period,
+                    p.gross_salary,
+                    p.total_deduction,
+                    p.net_salary,
+                    p.status
+                ].map(value => String(value || '').toLowerCase());
+
+                const matchesSearch = !searchTerm || searchableValues.some(value => value.includes(searchTerm));
+                const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
+                return matchesSearch && matchesStatus;
+            });
+
+            const totalPages = Math.max(1, Math.ceil(filtered.length / itemsPerPage));
+            if (currentPage > totalPages) currentPage = totalPages;
+
             const start = (currentPage - 1) * itemsPerPage;
             const end = start + itemsPerPage;
             const pageData = filtered.slice(start, end);
@@ -466,8 +487,93 @@
         }
 
         function updatePagination(totalItems) {
-            // Pagination logic - unchanged
-            document.getElementById('paginationInfo').textContent = `Showing 1-${Math.min(itemsPerPage, totalItems)} of ${totalItems}`;
+            const infoEl = document.getElementById('paginationInfo');
+            const controlsEl = document.getElementById('paginationControls');
+            if (!infoEl || !controlsEl) return;
+
+            const pageCount = Math.ceil(totalItems / itemsPerPage);
+            if (totalItems === 0) {
+                infoEl.textContent = 'Showing 0-0 of 0';
+                controlsEl.innerHTML = '';
+                return;
+            }
+
+            const start = (currentPage - 1) * itemsPerPage + 1;
+            const end = Math.min(start + itemsPerPage - 1, totalItems);
+            infoEl.textContent = `Showing ${start}-${end} of ${totalItems}`;
+
+            const buttons = [];
+            const buttonBase = 'px-3 py-1 rounded-lg text-xs sm:text-sm transition-colors';
+            const disabledClass = 'text-gray-300 cursor-not-allowed';
+            const idleClass = 'text-gray-500 hover:bg-gray-100';
+
+            buttons.push(`
+                <button type="button" ${currentPage === 1 ? 'disabled' : `onclick="changePage(${currentPage - 1})"`}
+                    class="${buttonBase} ${currentPage === 1 ? disabledClass : idleClass}">
+                    Previous
+                </button>
+            `);
+
+            getVisiblePages(pageCount).forEach(page => {
+                if (page === 'ellipsis') {
+                    buttons.push('<span class="px-2 py-1 text-xs sm:text-sm text-gray-400">...</span>');
+                    return;
+                }
+
+                const isActive = page === currentPage;
+                buttons.push(`
+                    <button type="button" ${isActive ? 'aria-current="page"' : `onclick="changePage(${page})"`}
+                        class="${buttonBase} ${isActive ? 'bg-[#b0303b] text-white' : idleClass}">
+                        ${page}
+                    </button>
+                `);
+            });
+
+            buttons.push(`
+                <button type="button" ${currentPage === pageCount ? 'disabled' : `onclick="changePage(${currentPage + 1})"`}
+                    class="${buttonBase} ${currentPage === pageCount ? disabledClass : idleClass}">
+                    Next
+                </button>
+            `);
+
+            controlsEl.innerHTML = buttons.join('');
+        }
+
+        function getVisiblePages(pageCount) {
+            if (pageCount <= 7) {
+                return Array.from({ length: pageCount }, (_, index) => index + 1);
+            }
+
+            const pages = [1];
+            const start = Math.max(2, currentPage - 1);
+            const end = Math.min(pageCount - 1, currentPage + 1);
+
+            if (start > 2) pages.push('ellipsis');
+            for (let page = start; page <= end; page++) pages.push(page);
+            if (end < pageCount - 1) pages.push('ellipsis');
+            pages.push(pageCount);
+            return pages;
+        }
+
+        function changePage(page) {
+            const totalItems = allPayroll.filter(p => {
+                const emp = allEmployees.find(e => e.id == p.employee_id);
+                const searchTerm = document.getElementById('searchInput')?.value.trim().toLowerCase() || '';
+                const statusFilter = document.getElementById('statusFilter')?.value || 'all';
+                const values = [
+                    emp?.full_name,
+                    p.period,
+                    p.gross_salary,
+                    p.total_deduction,
+                    p.net_salary,
+                    p.status
+                ].map(value => String(value || '').toLowerCase());
+                return (!searchTerm || values.some(value => value.includes(searchTerm)))
+                    && (statusFilter === 'all' || p.status === statusFilter);
+            }).length;
+            const pageCount = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+            currentPage = Math.min(Math.max(1, Number(page) || 1), pageCount);
+            renderTable();
         }
 
         function setupLiveRefresh() {
@@ -488,6 +594,7 @@
         }
 
         window.downloadPayslip = function(id) { window.open(`payslip.html?id=${id}`, '_blank'); };
+        window.changePage = changePage;
         window.logout = async () => { await fetch('/api/auth/logout.php', {method: 'POST', credentials: 'include'}); localStorage.clear(); window.location.href = 'index.html'; };
         document.getElementById('searchInput')?.addEventListener('input', () => { currentPage = 1; renderTable(); });
         document.getElementById('statusFilter')?.addEventListener('change', () => { currentPage = 1; renderTable(); });
