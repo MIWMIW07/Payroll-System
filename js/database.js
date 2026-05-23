@@ -363,6 +363,12 @@ async function getAllAttendance() {
 
 async function getAttendanceByEmployee(employeeId, tabType = null) {
     if (tabType && ['guard', 'sa'].includes(tabType)) {
+        const staticOnlyHosts = ['payroll-system-dtbs.onrender.com'];
+        if (staticOnlyHosts.includes(window.location.hostname)) {
+            console.warn(`${tabType} attendance API is unavailable on this static deployment; showing empty attendance state.`);
+            return [];
+        }
+
         try {
             const api = await ensureApiIntegration();
             const attendance = await api.getAttendance(tabType);
@@ -371,6 +377,8 @@ async function getAttendanceByEmployee(employeeId, tabType = null) {
                 String(a.employee_id) === String(employeeId)
             );
         } catch (error) {
+            // Guard/SA attendance endpoints may be absent on static-only deployments.
+            // Keep role dashboards usable by showing an empty attendance state.
             console.warn(`Could not load ${tabType} attendance records:`, error.message);
             return [];
         }
