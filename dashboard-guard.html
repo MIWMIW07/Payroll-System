@@ -253,16 +253,19 @@
             } else {
                 tbody.innerHTML = recentAttendance.map(a => {
                     const date = new Date(a.attendance_date || a.date);
-                    const hours = a.hours_worked || a.hours_attended || (a.present ? 8 : 0);
+                    const present = !!a.present;
+                    const hours = present ? (a.hours_worked || a.hours_attended || 8) : 0;
                     
                     return `
                         <tr class="border-b hover:bg-gray-50">
                             <td class="py-3 px-6">${DashboardCommon.formatDate(date)}</td>
                             <td class="py-3">${days[date.getDay()]}</td>
-                            <td class="py-3">${a.time_in || '—'}</td>
-                            <td class="py-3">${a.time_out || '—'}</td>
+                            <td class="py-3">${present ? '—' : '—'}</td>
+                            <td class="py-3">${present ? '—' : '—'}</td>
                             <td class="py-3">${hours} hrs</td>
-                            <td class="py-3"><span class="bg-green-100 text-green-600 px-2 py-1 rounded-full text-xs">Present</span></td>
+                            <td class="py-3">
+                                <span class="${present ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'} px-2 py-1 rounded-full text-xs">${present ? 'Present' : 'Absent'}</span>
+                            </td>
                         </tr>
                     `;
                 }).join('');
@@ -339,15 +342,21 @@
 
         function expandDailyAttendance(periodRows) {
             return (periodRows || []).flatMap(period => {
-                if (!period.daily_data) return [period];
+                // guard.php returns attendance_guard rows with daily_data like: {"2026-05-01": true, ...}
+                if (!period.daily_data || typeof period.daily_data !== 'object') return [];
+
+                const start = period.period_start;
+                const end = period.period_end;
+                const dailyRate = period.rate || 0;
+
                 return Object.entries(period.daily_data).map(([date, present]) => ({
                     date,
                     attendance_date: date,
                     present: present === true || present === 1 || present === '1' || present === 'true',
-                    hours_worked: present ? 8 : 0,
-                    period_start: period.period_start,
-                    period_end: period.period_end,
-                    rate: period.rate || 0
+                    hours_worked: (present === true || present === 1 || present === '1' || present === 'true') ? 8 : 0,
+                    period_start: start,
+                    period_end: end,
+                    rate: dailyRate
                 }));
             }).sort((a, b) => new Date(b.date || b.attendance_date) - new Date(a.date || a.attendance_date));
         }
