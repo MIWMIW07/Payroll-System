@@ -375,11 +375,13 @@ async function loadPeriods() {
 
 async function getAttendanceByEmployee(employeeId, tabType = null) {
     if (tabType && ['guard', 'sa'].includes(tabType)) {
-        const staticOnlyHosts = ['payroll-system-dtbs.onrender.com'];
-        if (staticOnlyHosts.includes(window.location.hostname)) {
-            console.warn(`${tabType} attendance API is unavailable on this static deployment; showing empty attendance state.`);
-            return [];
-        }
+        // NOTE:
+        // Previously this code hard-blocked guard/SA attendance API calls on a specific static-only host.
+        // That prevented dashboards from displaying any DB data.
+        // Now we always attempt the API and fall back to [] only if the call fails.
+        //
+        // If guard/SA endpoints are truly unavailable in a deployment, the catch below will handle it.
+
 
         try {
             const api = await ensureApiIntegration();
