@@ -616,54 +616,161 @@ class Database {
         // Delete existing payroll for this exact period (regenerate fresh)
         $this->delete('payroll', 'period_start = ? AND period_end = ?', [$period_start, $period_end]);
         
-        // Get employees for this period's attendance, with EDA summarized separately
-        // so lates/absences/overtime are not multiplied by multiple attendance rows.
+        // Get employees for this period across all current attendance tables.
+        // The legacy attendance table is still included for older records.
         $attendance = $this->fetchAll("
-            SELECT a.employee_id, emp.full_name, emp.hourly_rate, emp.admin_pay_rate, emp.assignment,
-                   a.total_hours,
-                   a.total_ot,
-                   a.admin_total,
-                   COALESCE(eda.total_lates, 0) as total_lates,
-                   COALESCE(eda.total_absences, 0) as total_absences,
-                   COALESCE(eda.total_eda_ot, 0) as total_eda_ot
-            FROM (
-                SELECT employee_id, period_start, period_end,
-                       SUM(COALESCE(hours_worked, 0)) as total_hours,
-                       SUM(COALESCE(overtime, 0)) as total_ot,
-                       SUM(COALESCE(admin_pay_rate, 0) * COALESCE(hours_worked, 0)) as admin_total
+            WITH attendance_sources AS (
+                SELECT employee_id::text AS employee_id,
+                       SUM(COALESCE(hours_worked, 0)) AS legacy_hours,
+                       SUM(COALESCE(overtime, 0)) AS legacy_ot,
+                       SUM(COALESCE(admin_pay_rate, 0) * COALESCE(hours_worked, 0)) AS legacy_admin_pay,
+                       0::numeric AS shs_hours,
+                       0::numeric AS college_hours,
+                       0::numeric AS eda_lates,
+                       0::numeric AS eda_absences,
+                       0::numeric AS eda_overtime,
+                       0::numeric AS admin_hours,
+                       0::numeric AS admin_pay,
+                       0::numeric AS guard_days,
+                       0::numeric AS guard_pay,
+                       0::numeric AS sa_days,
+                       0::numeric AS sa_pay
                 FROM attendance
                 WHERE period_start = ? AND period_end = ?
-                GROUP BY employee_id, period_start, period_end
-            ) a
-            JOIN employees emp ON a.employee_id = emp.id
-            LEFT JOIN (
-                SELECT employee_id, period_start, period_end,
-                       SUM(COALESCE(lates, 0)) as total_lates,
-                       SUM(COALESCE(absences, 0)) as total_absences,
-                       SUM(COALESCE(overtime, 0)) as total_eda_ot
+                GROUP BY employee_id
+
+                UNION ALL
+
+                SELECT employee_id::text, 0, 0, 0,
+                       SUM(COALESCE(total_hours, 0)), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+                FROM attendance_shs_dtr
+                WHERE period_start = ? AND period_end = ? AND COALESCE(status, 'active') = 'active'
+                GROUP BY employee_id
+
+                UNION ALL
+
+                SELECT employee_id::text, 0, 0, 0,
+                       0, SUM(COALESCE(total_hours, 0)), 0, 0, 0, 0, 0, 0, 0, 0, 0
+                FROM attendance_college_dtr
+                WHERE period_start = ? AND period_end = ? AND COALESCE(status, 'active') = 'active'
+                GROUP BY employee_id
+
+                UNION ALL
+
+                SELECT employee_id::text, 0, 0, 0,
+                       0, 0,
+                       SUM(COALESCE(lates, 0)),
+                       SUM(COALESCE(absences, 0)),
+                       SUM(COALESCE(overtime, 0)),
+                       0, 0, 0, 0, 0, 0
                 FROM attendance_eda
-                WHERE period_start = ? AND period_end = ?
-                GROUP BY employee_id, period_start, period_end
-            ) eda ON a.employee_id::text = eda.employee_id
-                AND a.period_start = eda.period_start
-                AND a.period_end = eda.period_end
-        ", [$period_start, $period_end, $period_start, $period_end]);
+                WHERE period_start = ? AND period_end = ? AND COALESCE(status, 'active') = 'active'
+                GROUP BY employee_id
+
+                UNION ALL
+
+                SELECT employee_id::text, 0, 0, 0,
+                       0, 0, 0, 0, 0,
+                       SUM(COALESCE(admin_hours, 0)),
+                       SUM(COALESCE(total_pay, 0)),
+                       0, 0, 0, 0
+                FROM attendance_admin_pay
+                WHERE period_start = ? AND period_end = ? AND COALESCE(status, 'active') = 'active'
+                GROUP BY employee_id
+
+                UNION ALL
+
+                SELECT employee_id::text, 0, 0, 0,
+                       0, 0, 0, 0, 0, 0, 0,
+                       SUM(COALESCE(days_worked, 0)),
+                       SUM(COALESCE(total_pay, 0)),
+                       0, 0
+                FROM attendance_guard
+                WHERE period_start = ? AND period_end = ? AND COALESCE(status, 'active') = 'active'
+                GROUP BY employee_id
+
+                UNION ALL
+
+                SELECT employee_id::text, 0, 0, 0,
+                       0, 0, 0, 0, 0, 0, 0, 0, 0,
+                       SUM(COALESCE(days_worked, 0)),
+                       SUM(COALESCE(total_pay, 0))
+                FROM attendance_sa
+                WHERE period_start = ? AND period_end = ? AND COALESCE(status, 'active') = 'active'
+                GROUP BY employee_id
+            )
+            SELECT emp.id AS employee_id,
+                   emp.full_name,
+                   emp.hourly_rate,
+                   emp.admin_pay_rate,
+                   emp.assignment,
+                   emp.rate_shs,
+                   emp.rate_college,
+                   emp.rate_admin,
+                   emp.rate_guard,
+                   emp.rate_sa,
+                   SUM(legacy_hours) AS legacy_hours,
+                   SUM(legacy_ot) AS legacy_ot,
+                   SUM(legacy_admin_pay) AS legacy_admin_pay,
+                   SUM(shs_hours) AS shs_hours,
+                   SUM(college_hours) AS college_hours,
+                   SUM(eda_lates) AS total_lates,
+                   SUM(eda_absences) AS total_absences,
+                   SUM(eda_overtime) AS total_eda_ot,
+                   SUM(admin_hours) AS admin_hours,
+                   SUM(admin_pay) AS source_admin_pay,
+                   SUM(guard_days) AS guard_days,
+                   SUM(guard_pay) AS guard_pay,
+                   SUM(sa_days) AS sa_days,
+                   SUM(sa_pay) AS sa_pay
+            FROM attendance_sources src
+            JOIN employees emp ON src.employee_id = emp.id::text
+            GROUP BY emp.id, emp.full_name, emp.hourly_rate, emp.admin_pay_rate, emp.assignment,
+                     emp.rate_shs, emp.rate_college, emp.rate_admin, emp.rate_guard, emp.rate_sa
+            ORDER BY emp.full_name
+        ", [
+            $period_start, $period_end,
+            $period_start, $period_end,
+            $period_start, $period_end,
+            $period_start, $period_end,
+            $period_start, $period_end,
+            $period_start, $period_end,
+            $period_start, $period_end
+        ]);
         
         $generated = [];
         foreach ($attendance as $emp) {
-            $totalHours = (float)($emp['total_hours'] ?? 0);
+            $legacyHours = (float)($emp['legacy_hours'] ?? 0);
+            $shsHours = (float)($emp['shs_hours'] ?? 0);
+            $collegeHours = (float)($emp['college_hours'] ?? 0);
+            $adminHours = (float)($emp['admin_hours'] ?? 0);
+            $guardDays = (float)($emp['guard_days'] ?? 0);
+            $saDays = (float)($emp['sa_days'] ?? 0);
+            $totalHours = $legacyHours + $shsHours + $collegeHours + $adminHours + ($guardDays * 8) + ($saDays * 8);
             $hourlyRate = (float)($emp['hourly_rate'] ?? 0);
+            $shsRate = (float)($emp['rate_shs'] ?? $hourlyRate ?? 0);
+            $collegeRate = (float)($emp['rate_college'] ?? $hourlyRate ?? 0);
+            $adminRate = (float)($emp['rate_admin'] ?? $emp['admin_pay_rate'] ?? $hourlyRate ?? 0);
             $undertimeFromLates = ((float)($emp['total_lates'] ?? 0)) / 60;
             $undertimeFromAbsences = ((float)($emp['total_absences'] ?? 0)) * 8;
             $totalUndertime = $undertimeFromLates + $undertimeFromAbsences;
             $regularHours = max(0, $totalHours - $totalUndertime);
-            $totalOvertime = (float)($emp['total_ot'] ?? 0) + (float)($emp['total_eda_ot'] ?? 0);
+            $totalOvertime = (float)($emp['legacy_ot'] ?? 0) + (float)($emp['total_eda_ot'] ?? 0);
 
-            $regular_pay = $regularHours * $hourlyRate;
-            $ot_pay = $totalOvertime * $hourlyRate * 1.25; // 25% OT premium
-            $admin_pay = $emp['admin_total'] ?? 0;
-            $gross = $regular_pay + $ot_pay + $admin_pay;
-            $undertimeDeduction = $totalUndertime * $hourlyRate;
+            $legacyPay = $legacyHours * $hourlyRate;
+            $shsPay = $shsHours * $shsRate;
+            $collegePay = $collegeHours * $collegeRate;
+            $sourceAdminPay = (float)($emp['source_admin_pay'] ?? 0);
+            $admin_pay = $sourceAdminPay > 0 ? $sourceAdminPay : ($adminHours * $adminRate);
+            $admin_pay += (float)($emp['legacy_admin_pay'] ?? 0);
+            $guardPay = (float)($emp['guard_pay'] ?? 0);
+            $saPay = (float)($emp['sa_pay'] ?? 0);
+            $otRate = $hourlyRate ?: max($shsRate, $collegeRate, $adminRate);
+            $ot_pay = $totalOvertime * $otRate * 1.25; // 25% OT premium
+            $grossBeforeUndertime = $legacyPay + $shsPay + $collegePay + $admin_pay + $guardPay + $saPay + $ot_pay;
+            $undertimeRate = $otRate;
+            $undertimeDeduction = $totalUndertime * $undertimeRate;
+            $gross = max(0, $grossBeforeUndertime - $undertimeDeduction);
             
             // Simple deductions (customize based on real rates)
             $sss = min($gross * 0.045, 900);
