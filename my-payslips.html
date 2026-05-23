@@ -135,16 +135,30 @@
             await loadEmployeeData();
         });
 
+        async function getUser() {
+            if (window.currentUser) return window.currentUser;
+            const response = await fetch('/api/auth/session.php', { credentials: 'include' }).catch(() => null);
+            if (!response || !response.ok) return {};
+            const data = await response.json();
+            return data.user || {};
+        }
+
+        function matchesEmployee(employee, user) {
+            return (user.email && employee.email === user.email) ||
+                (user.employee_id && Number(employee.id) === Number(user.employee_id)) ||
+                (user.employee_id && String(employee.employee_id) === String(user.employee_id));
+        }
+
         async function loadEmployeeData() {
             DashboardCommon.showLoading(true);
             try {
                 await Database.ensureDatabaseReady();
                 
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                const user = await getUser();
                 document.getElementById('userName').textContent = user.full_name || user.username || 'Employee';
                 
                 const employees = await Database.getAllEmployees();
-                const employee = employees.find(e => e.email === user.email || e.employee_id === user.employee_id) || employees[0];
+                const employee = employees.find(e => matchesEmployee(e, user)) || employees[0];
                 
                 if (employee) {
                     employeeId = employee.id;
