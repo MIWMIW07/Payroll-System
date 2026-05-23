@@ -40,7 +40,7 @@ async function ensureApiIntegration() {
         async createPayroll(data) { return this.call('/api/payroll', { method: 'POST', body: JSON.stringify(data) }); },
         async updatePayroll(id, data) { return this.call('/api/payroll', { method: 'PUT', body: JSON.stringify({ ...data, id }) }); },
         async deletePayroll(id) { return this.call(`/api/payroll?id=${id}`, { method: 'DELETE' }); },
-        async getAttendance(type = 'admin-master') { return this.call(`/api/attendance/${type}`); },
+        async getAttendance(type = 'admin-master') { return this.call(`/api/attendance.php?type=${encodeURIComponent(type)}`); },
         async createAttendance(type, data) { return this.call(`/api/attendance/${type}`, { method: 'POST', body: JSON.stringify(data) }); },
         async updateAttendance(type, id, data) { return this.call(`/api/attendance/${type}`, { method: 'PUT', body: JSON.stringify({ ...data, id }) }); },
         async deleteAttendance(type, id) { return this.call(`/api/attendance/${type}?id=${id}`, { method: 'DELETE' }); },

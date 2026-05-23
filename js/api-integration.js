@@ -153,7 +153,7 @@ class ApiIntegration {
     // ATTENDANCE ENDPOINTS
     // ============================================
     async getAttendance(type = 'admin-master') {
-        return this.call(`/api/attendance/${type}`);
+        return this.call(`/api/attendance.php?type=${encodeURIComponent(type)}`);
     }
 
     async createAttendance(type, data) {
